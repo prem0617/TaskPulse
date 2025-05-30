@@ -2,6 +2,7 @@ import { Response, NextFunction, Request } from "express";
 import jwt from "jsonwebtoken";
 
 import { IUser } from "../models/user.model";
+import { compileFunction } from "vm";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -25,6 +26,7 @@ export const authMiddleware = (
       "role" in decoded
     ) {
       req.user = decoded as IUser;
+      console.log(req.user);
       next();
     } else {
       res.status(403).json({ message: "Invalid token format" });

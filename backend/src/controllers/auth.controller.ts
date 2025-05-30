@@ -34,6 +34,7 @@ export async function login(req: Request, res: Response) {
 
     //   generate payload for cookies
     const payload: IPayload = {
+      id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
@@ -89,6 +90,7 @@ export async function signup(req: Request, res: Response) {
 
     // Prepare payload for JWT
     const payload: IPayload = {
+      id: newUser.id!,
       name: newUser.name,
       email: newUser.email,
       role: newUser.role,

@@ -6,6 +6,7 @@ import "dotenv/config";
 
 import connectDB from "./lib/connectDb";
 import authRoutes from "./routes/auth.route";
+import projectRoutes from "./routes/projects.route";
 
 const app = express();
 const PORT = 3000;
@@ -16,6 +17,7 @@ app.use(cors());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/project", projectRoutes);
 
 // Basic route
 app.get("/", (_req: Request, res: Response) => {
