@@ -8,7 +8,8 @@ import connectDB from "./lib/connectDb";
 
 import authRoutes from "./routes/auth.route";
 import projectRoutes from "./routes/projects.route";
-import taskRoutes from "./routes/task.model";
+import taskRoutes from "./routes/task.route";
+import userRoutes from "./routes/user.route";
 
 const app = express();
 const PORT = 3000;
@@ -26,6 +27,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/task", taskRoutes);
+app.use("/api/users", userRoutes);
 
 // Basic route
 app.get("/", (_req: Request, res: Response) => {

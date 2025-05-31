@@ -26,7 +26,7 @@ export const authMiddleware = (
       "role" in decoded
     ) {
       req.user = decoded as IUser;
-      console.log(req.user);
+      // console.log(req.user);
       next();
     } else {
       res.status(403).json({ message: "Invalid token format" });

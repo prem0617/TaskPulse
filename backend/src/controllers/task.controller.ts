@@ -47,7 +47,7 @@ export async function addTask(req: Request, res: Response) {
 export async function assignedTaskTo(req: Request, res: Response) {
   try {
     const user = req.user;
-    console.log(user);
+    // console.log(user);
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
@@ -62,7 +62,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
       return;
     }
 
-    console.log(project);
+    // console.log(project);
 
     const acceptMembersList = project.members.map((p: mongoose.ObjectId) => {
       return p.toString();
@@ -78,7 +78,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
 
     const isMemberIsPartOfProject = acceptMembersList.includes(userId);
 
-    console.log({ isPendingRequest, isMemberIsPartOfProject });
+    // console.log({ isPendingRequest, isMemberIsPartOfProject });
 
     if (isPendingRequest) {
       res.status(400).json({
@@ -122,7 +122,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
 export async function modifyStatus(req: Request, res: Response) {
   try {
     const user = req.user;
-    console.log(user);
+    // console.log(user);
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
@@ -157,6 +157,23 @@ export async function modifyStatus(req: Request, res: Response) {
     res
       .status(500)
       .json({ error: "Server error while modify task status", success: false });
+    return;
+  }
+}
+
+export async function getTasks(req: Request, res: Response) {
+  try {
+    const { projectId } = await req.body;
+    // console.log(projectId);
+    const tasks = await taskModel.find({
+      projectId,
+    });
+    // console.log(tasks);
+    res.json({ tasks, success: true });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.json({ error, success: false });
     return;
   }
 }

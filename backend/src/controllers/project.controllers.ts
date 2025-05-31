@@ -4,7 +4,7 @@ import projectModel from "../models/project.model";
 export async function createProject(req: Request, res: Response) {
   try {
     const user = req.user;
-    console.log(user);
+    // console.log(user);
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
@@ -38,10 +38,10 @@ export async function createProject(req: Request, res: Response) {
   }
 }
 
-export async function getProject(req: Request, res: Response) {
+export async function getProjects(req: Request, res: Response) {
   try {
     const user = req.user;
-    console.log(user);
+    // console.log(user, "in PROJECTS");
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
@@ -51,7 +51,35 @@ export async function getProject(req: Request, res: Response) {
       createdBy: user.id.toString(),
     });
 
-    res.json({ message: "Project fetched", getUserProjects });
+    res.json({ message: "Project fetched", projects: getUserProjects });
+    return;
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Server error while fetching projects", success: false });
+    return;
+  }
+}
+export async function getProject(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    // console.log(user, "in PROJECTS");
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
+    const { projectId } = req.body;
+
+    if (!projectId) {
+      res.status(404).json({ error: "Project id not found", success: false });
+      return;
+    }
+
+    const project = await projectModel.findById(projectId);
+
+    res.json({ message: "Project fetched", project });
     return;
   } catch (error) {
     console.error(error);
@@ -106,7 +134,7 @@ export async function sendRequest(req: Request, res: Response) {
 export async function acceptRequest(req: Request, res: Response) {
   try {
     const user = req.user;
-    console.log(user);
+    // console.log(user);
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
