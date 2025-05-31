@@ -15,7 +15,12 @@ const PORT = 3000;
 
 // Middleware to parse JSON
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // frontend origin
+    credentials: true, // if using cookies or sessions
+  })
+);
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
