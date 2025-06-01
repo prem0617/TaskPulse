@@ -67,12 +67,12 @@ const Login = () => {
     >
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-8 text-center">
+        <div className="bg-[#31383e] px-8 py-8 text-center">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl mb-4"
+            className="inline-flex items-center justify-center w-16 h-16 bg-[#22313f] rounded-2xl mb-4"
           >
             <Users className="w-8 h-8 text-white" />
           </motion.div>
@@ -80,7 +80,7 @@ const Login = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="text-2xl font-bold text-gray-800 mb-2"
+            className="text-2xl font-bold text-gray-200 mb-2"
           >
             Welcome to Samanvay
           </motion.h1>
@@ -88,7 +88,7 @@ const Login = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="text-gray-600"
+            className="text-gray-100"
           >
             Sign in to manage your projects
           </motion.p>
@@ -163,7 +163,7 @@ const Login = () => {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full bg-[#22313f] text-white py-4 rounded-xl font-semibold text-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {isLoading ? (
                 <motion.div
@@ -190,7 +190,7 @@ const Login = () => {
             <p className="text-gray-600">
               Don't have an account?{" "}
               <Link to={"/signup"}>
-                <button className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+                <button className="text-[#22313f] cursor-pointer font-semibold transition-colors">
                   Sign up
                 </button>
               </Link>

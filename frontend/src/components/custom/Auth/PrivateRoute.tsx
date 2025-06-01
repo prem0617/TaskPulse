@@ -8,7 +8,7 @@ interface Props {
 
 const PrivateRoute = ({ children }: Props) => {
   const { loading, user } = useAuthContext();
-  console.log(loading, user);
+  //   console.log(loading, user);
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
 

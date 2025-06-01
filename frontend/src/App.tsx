@@ -1,16 +1,36 @@
 import { Route, Routes } from "react-router";
-import Login from "./components/custom/Login";
-import Signup from "./components/custom/Signup";
+import Login from "./components/custom/Auth/Login";
+import Signup from "./components/custom/Auth/Signup";
 import Home from "./components/custom/Home";
-import Profile from "./components/custom/Profile";
-import PrivateRoute from "./components/custom/PrivateRoute";
+import Profile from "./components/custom/Auth/Profile";
+import PrivateRoute from "./components/custom/Auth/PrivateRoute";
+import CreateProject from "./components/custom/Project/CreateProject";
+import AuthComponentWrapper from "./components/custom/Auth/AuthComponentWarpper";
+import AllProjects from "./components/custom/Project/AllProjects";
+import OneProject from "./components/custom/Project/OneProject";
+import Request from "./components/custom/Request";
+import InvitedProjects from "./components/custom/Project/InvitedProjects";
 
 function App() {
   return (
     <div>
       <Routes>
-        <Route element={<Login />} path="/login" />
-        <Route element={<Signup />} path="/signup" />
+        <Route
+          element={
+            <AuthComponentWrapper>
+              <Login />
+            </AuthComponentWrapper>
+          }
+          path="/login"
+        />
+        <Route
+          element={
+            <AuthComponentWrapper>
+              <Signup />
+            </AuthComponentWrapper>
+          }
+          path="/signup"
+        />
         <Route element={<Home />} path="/" />
         <Route
           element={
@@ -18,8 +38,41 @@ function App() {
               <Profile />
             </PrivateRoute>
           }
-          path="/profile"
+          path="/profile/:id"
         />
+        <Route
+          element={
+            <PrivateRoute>
+              <AllProjects />
+            </PrivateRoute>
+          }
+          path="/projects"
+        />
+        <Route
+          element={
+            <PrivateRoute>
+              <OneProject />
+            </PrivateRoute>
+          }
+          path="/project/:id"
+        />
+        <Route
+          element={
+            <PrivateRoute>
+              <Request />
+            </PrivateRoute>
+          }
+          path="/invite-request"
+        />
+        <Route
+          element={
+            <PrivateRoute>
+              <InvitedProjects />
+            </PrivateRoute>
+          }
+          path="/invited-projects"
+        />
+        <Route element={<CreateProject />} path="/createproject" />
       </Routes>
     </div>
   );
