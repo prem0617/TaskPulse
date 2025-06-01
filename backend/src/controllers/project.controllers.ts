@@ -173,13 +173,40 @@ export async function acceptRequest(req: Request, res: Response) {
     project.members.push(user.id);
 
     await project.save();
-    res.json({ message: "Member is added to the project", project });
+    res.json({ message: "You are now part of the project", project });
     return;
   } catch (error) {
     console.error(error);
     res
       .status(500)
       .json({ error: "Server error while adding member", success: false });
+    return;
+  }
+}
+export async function invitedProjects(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    // console.log(user);
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
+    const userId = user.id;
+
+    const invitedProjects = await projectModel.find({
+      members: userId,
+    });
+
+    res.json({ invitedProjects });
+
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Server error while fetch invited projects",
+      success: false,
+    });
     return;
   }
 }

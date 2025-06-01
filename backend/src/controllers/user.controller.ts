@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 
 import userModel from "../models/user.model";
+import projectModel from "../models/project.model";
 
 export async function searchUser(req: Request, res: Response) {
   const query = req.query.q;
-
+  console.log(query);
   if (!query) {
     res.status(400).json({ message: "Missing search query" });
     return;
@@ -16,10 +17,59 @@ export async function searchUser(req: Request, res: Response) {
         name: { $regex: query, $options: "i" },
       })
       .limit(5);
-
     res.json(users);
   } catch (error) {
     console.error("Search error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+export async function userInviteRequest(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    // console.log(user);
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
+    const userId = user.id;
+
+    const inviteProjects = await projectModel
+      .find({
+        pendingMembers: userId,
+      })
+      .populate("createdBy", "name email");
+
+    if (!inviteProjects) {
+      res.status(200).json({ message: "No projects found", success: false });
+    }
+
+    res.json({ inviteProjects });
+    return;
+  } catch (error) {
+    console.error("Invite Request error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+export async function getUser(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    // console.log(user);
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
+    const { userId } = req.body;
+
+    const userDoc = await userModel.findById(userId).select("-passwordHash");
+
+    res.json({ user: userDoc });
+    return;
+  } catch (error) {
+    console.error("Invite Request error:", error);
     res.status(500).json({ message: "Server error" });
   }
 }

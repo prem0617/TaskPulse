@@ -52,7 +52,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
       res.status(404).json({ error: "User not found", success: false });
       return;
     }
-
+    // console.log(req.body);
     const { userId, taskId, projectId } = req.body;
 
     const project = await projectModel.findById(projectId);
@@ -130,6 +130,8 @@ export async function modifyStatus(req: Request, res: Response) {
 
     const { taskId, status } = req.body;
 
+    console.log({ taskId, status });
+
     const task = await taskModel.findById(taskId);
 
     if (!task) {
@@ -165,9 +167,11 @@ export async function getTasks(req: Request, res: Response) {
   try {
     const { projectId } = await req.body;
     // console.log(projectId);
-    const tasks = await taskModel.find({
-      projectId,
-    });
+    const tasks = await taskModel
+      .find({
+        projectId,
+      })
+      .populate("assignedTo", "name email");
     // console.log(tasks);
     res.json({ tasks, success: true });
     return;

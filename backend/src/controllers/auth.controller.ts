@@ -23,7 +23,10 @@ export async function login(req: Request, res: Response) {
     }
 
     // match the hashed and original password
-    const isPasswordMatched = bcrypt.compare(password, user?.passwordHash);
+    const isPasswordMatched = await bcrypt.compare(
+      password,
+      user?.passwordHash
+    );
 
     if (!isPasswordMatched) {
       res
@@ -31,6 +34,8 @@ export async function login(req: Request, res: Response) {
         .json({ error: "Password is not matched", success: false });
       return;
     }
+
+    console.log(isPasswordMatched);
 
     //   generate payload for cookies
     const payload: IPayload = {
@@ -117,7 +122,7 @@ export async function signup(req: Request, res: Response) {
 }
 
 export function logout(_req: Request, res: Response) {
-  res.clearCookie("token", {
+  res.clearCookie("tmtoken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

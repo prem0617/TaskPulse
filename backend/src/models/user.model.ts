@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, model } from "mongoose";
 
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
+  username: string;
   name: string;
   email: string;
   passwordHash: string;
