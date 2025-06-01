@@ -11,15 +11,16 @@ import projectRoutes from "./routes/projects.route";
 import taskRoutes from "./routes/task.route";
 import userRoutes from "./routes/user.route";
 
-const app = express();
+import { server, io, app } from "./socket/socket.io";
+
 const PORT = 3000;
 
 // Middleware to parse JSON
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend origin
-    credentials: true, // if using cookies or sessions
+    origin: "http://localhost:5173",
+    credentials: true,
   })
 );
 app.use(cookieParser());
@@ -35,7 +36,7 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   connectDB();
 });
