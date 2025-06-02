@@ -1,30 +1,39 @@
 // hooks/useSocket.ts
-import { useEffect, useRef } from "react";
+import { useAuthContext } from "@/context/AuthContext";
+import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:3000"; // Change to your server's URL
+const SOCKET_URL = "http://localhost:3000";
 
-export const useSocket = () => {
+export const useSocket = (): Socket | null => {
   const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const { user } = useAuthContext();
 
   useEffect(() => {
-    // Connect
-    socketRef.current = io(SOCKET_URL, {
-      withCredentials: true, // optional, based on your backend CORS setup
+    if (!user || !user.id) return;
+
+    const s = io(SOCKET_URL, {
+      withCredentials: true,
+      auth: {
+        userId: user.id,
+      },
     });
 
-    socketRef.current.on("connect", () => {
-      console.log("Connected to socket server with ID:", socketRef.current!.id);
+    socketRef.current = s;
+    setSocket(s); // ✅ trigger re-render with ready socket
+
+    s.on("connect", () => {
+      console.log("✅ Connected to socket server with ID:", s.id);
     });
 
-    // Cleanup on unmount
+    // Cleanup on unmount or user change
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
+      s.disconnect();
+      socketRef.current = null;
+      setSocket(null);
     };
-  }, []);
+  }, [user]);
 
-  return socketRef.current;
+  return socket;
 };

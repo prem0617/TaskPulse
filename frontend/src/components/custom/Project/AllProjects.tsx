@@ -10,7 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-interface Project {
+export interface Project {
   _id: string;
   title: string;
   description: string;

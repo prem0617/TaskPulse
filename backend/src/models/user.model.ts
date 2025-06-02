@@ -8,15 +8,18 @@ export interface IUser extends Document {
   passwordHash: string;
   profilePic?: string;
   role: "admin" | "member";
+  rooms: string[];
 }
 
 const userSchema = new Schema<IUser>(
   {
+    username: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     profilePic: { type: String },
     role: { type: String, enum: ["admin", "member"], default: "member" },
+    rooms: [{ type: String }],
   },
   { timestamps: true }
 );
@@ -25,7 +28,6 @@ userSchema.virtual("id").get(function (this: IUser) {
   return this._id.toHexString();
 });
 
-// ✅ Include virtuals when converting document to JSON
 userSchema.set("toJSON", {
   virtuals: true,
 });

@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import projectModel from "../models/project.model";
+import { getReceiverSocketId, io } from "../socket/socket.io";
+import userModel from "../models/user.model";
 
 export async function createProject(req: Request, res: Response) {
   try {
@@ -26,6 +28,24 @@ export async function createProject(req: Request, res: Response) {
 
     const newProject = new projectModel(projectData);
     await newProject.save();
+
+    const roomName = newProject.id;
+    console.log(roomName);
+
+    const socketId = getReceiverSocketId(user.id);
+    console.log(socketId, "socketId");
+    if (socketId) {
+      const socket = io.sockets.sockets.get(socketId);
+      if (socket) {
+        socket.join(roomName);
+        // console.log(socket);
+      }
+    }
+
+    const userFromDB = await userModel.findById(user.id);
+
+    userFromDB.rooms.push(roomName);
+    await userFromDB.save();
 
     res.json({ message: "Project added", newProject });
     return;
@@ -92,7 +112,7 @@ export async function getProject(req: Request, res: Response) {
 
 export async function sendRequest(req: Request, res: Response) {
   try {
-    const { memberId, projectId } = req.body;
+    const { memberId, projectId, username } = req.body;
     if (!memberId || !projectId) {
       res
         .status(400)
@@ -121,6 +141,14 @@ export async function sendRequest(req: Request, res: Response) {
     await project.save();
 
     res.json({ message: "Member is added to the project", project });
+
+    const roomName = project.id;
+
+    io.to(roomName).emit(
+      "invite-msg",
+      `${username} is invited to this Project`
+    );
+
     return;
   } catch (error) {
     console.error(error);
@@ -173,6 +201,29 @@ export async function acceptRequest(req: Request, res: Response) {
     project.members.push(user.id);
 
     await project.save();
+
+    const roomName = projectId;
+    console.log(roomName, "room name");
+
+    const socketId = getReceiverSocketId(user.id);
+    console.log(socketId, "socketId");
+    if (socketId) {
+      console.log("inside socket");
+      const socket = io.sockets.sockets.get(socketId);
+      if (socket) {
+        socket.join(roomName);
+        const userFromDB = await userModel.findById(user.id);
+        userFromDB.rooms.push(roomName);
+        await userFromDB.save();
+        io.to(roomName).emit(
+          "accept-msg",
+          `${user.username} accepted invite request`
+        );
+      }
+    }
+
+    console.log("outside socket");
+
     res.json({ message: "You are now part of the project", project });
     return;
   } catch (error) {
@@ -183,6 +234,7 @@ export async function acceptRequest(req: Request, res: Response) {
     return;
   }
 }
+
 export async function invitedProjects(req: Request, res: Response) {
   try {
     const user = req.user;

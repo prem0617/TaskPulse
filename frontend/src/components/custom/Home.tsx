@@ -3,13 +3,10 @@ import { Link, useNavigate } from "react-router-dom"; // ✅ Fix this
 import { Button } from "../ui/button";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useSocket } from "@/hooks/useSokect";
-import { useEffect } from "react";
 
 const Home = () => {
   const { user, setUser } = useAuthContext();
   const navigate = useNavigate();
-  const socket = useSocket();
   async function handleLogout() {
     try {
       localStorage.removeItem("tmtoken");

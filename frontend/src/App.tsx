@@ -10,10 +10,12 @@ import AllProjects from "./components/custom/Project/AllProjects";
 import OneProject from "./components/custom/Project/OneProject";
 import Request from "./components/custom/Request";
 import InvitedProjects from "./components/custom/Project/InvitedProjects";
+import SocketListener from "./components/custom/SocketListener";
 
 function App() {
   return (
     <div>
+      <SocketListener />
       <Routes>
         <Route
           element={

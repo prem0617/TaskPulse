@@ -11,7 +11,7 @@ import projectRoutes from "./routes/projects.route";
 import taskRoutes from "./routes/task.route";
 import userRoutes from "./routes/user.route";
 
-import { server, io, app } from "./socket/socket.io";
+import { server, app } from "./socket/socket.io";
 
 const PORT = 3000;
 

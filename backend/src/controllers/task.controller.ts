@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import taskModel from "../models/task.model";
 import projectModel from "../models/project.model";
-import { compileFunction } from "vm";
+
 import mongoose from "mongoose";
+import { getReceiverSocketId, io } from "../socket/socket.io";
 
 export async function addTask(req: Request, res: Response) {
   try {
@@ -31,6 +32,22 @@ export async function addTask(req: Request, res: Response) {
     const newTask = new taskModel(taskData);
 
     await newTask.save();
+
+    const socketId = getReceiverSocketId(user.id);
+
+    console.log(newTask);
+
+    if (socketId) {
+      if (socketId) {
+        const socket = io.sockets.sockets.get(socketId);
+        if (socket) {
+          io.to(projectId).emit("new-task", {
+            message: `${title} is added as new task by admin`,
+            task: newTask,
+          });
+        }
+      }
+    }
 
     res.json({ message: "New task is created", newTask, success: true });
 
@@ -107,6 +124,15 @@ export async function assignedTaskTo(req: Request, res: Response) {
 
     await task.save();
 
+    const receiverId = getReceiverSocketId(userId);
+    console.log(receiverId, "receiverId");
+    if (receiverId) {
+      io.to(receiverId).emit(
+        "assigned-task",
+        `${task.title} is assigned to you`
+      );
+    }
+
     res.json({ message: `Task is assigned to user ${userId} `, success: true });
 
     return;
@@ -132,14 +158,20 @@ export async function modifyStatus(req: Request, res: Response) {
 
     console.log({ taskId, status });
 
-    const task = await taskModel.findById(taskId);
+    const task = await taskModel.findById(taskId).populate("assignedTo");
+
+    console.log(task);
+
+    const projectId = task.projectId.toString();
+
+    console.log(projectId);
 
     if (!task) {
       res.status(404).json({ error: "Task is not Found", success: false });
       return;
     }
 
-    if (task.assignedTo.toString() !== user.id) {
+    if (task.assignedTo._id.toString() !== user.id) {
       res.status(400).json({
         error:
           "You don't have access to change the status of task because it is not assign to you",
@@ -151,6 +183,22 @@ export async function modifyStatus(req: Request, res: Response) {
     task.status = status;
 
     await task.save();
+
+    const socketId = getReceiverSocketId(user.id);
+
+    const message = `${task.title} is now in the "${status}" stage.`;
+
+    if (socketId) {
+      if (socketId) {
+        const socket = io.sockets.sockets.get(socketId);
+        if (socket) {
+          io.to(projectId).emit("change-task-status", {
+            message,
+            task,
+          });
+        }
+      }
+    }
 
     res.json({ message: "Task status updated", task, success: true });
     return;
@@ -171,7 +219,8 @@ export async function getTasks(req: Request, res: Response) {
       .find({
         projectId,
       })
-      .populate("assignedTo", "name email");
+      .populate("assignedTo", "name email")
+      .populate("projectId");
     // console.log(tasks);
     res.json({ tasks, success: true });
     return;
@@ -179,5 +228,45 @@ export async function getTasks(req: Request, res: Response) {
     console.log(error);
     res.json({ error, success: false });
     return;
+  }
+}
+
+export async function deleteTask(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    // console.log(user);
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
+    const { taskId } = req.query;
+    console.log(taskId);
+    const task = await taskModel.findByIdAndDelete(taskId);
+    if (!task) {
+      res.json({ error: "Task not found", success: false });
+      return;
+    }
+
+    const projectId = task.projectId.toString();
+
+    const socketId = getReceiverSocketId(user.id);
+
+    if (socketId) {
+      if (socketId) {
+        const socket = io.sockets.sockets.get(socketId);
+        if (socket) {
+          io.to(projectId).emit("delete-task", task);
+        }
+      }
+    }
+
+    res.json({ message: "Task deleted", success: true });
+    return;
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Server error while deleting task", success: false });
   }
 }

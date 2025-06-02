@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import toast from "react-hot-toast";
 
 interface CreatedBy {
   name: string;
@@ -27,6 +26,7 @@ interface Data {
 
 const Request = () => {
   const [inviteProjects, setInviteProjects] = useState<Project[]>([]);
+
   async function fetchInviteRequest() {
     try {
       const response = await axios.get(
@@ -55,7 +55,7 @@ const Request = () => {
         { withCredentials: true }
       );
       //   console.log(response);
-      toast.success(response.data.message);
+      console.log(response.data.message);
     } catch (error) {}
   }
 

@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useSocket } from "@/hooks/useSokect";
 import axios from "axios";
 import { Check, FileText, Mail, Plus, User, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  username: string;
 }
 
 interface Props {
@@ -24,10 +26,11 @@ interface Props {
 const AddNewUser = ({ id: projectId }: Props) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [_isSubmitting, setIsSubmitting] = useState(false);
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [_isSearching, setIsSearching] = useState(false);
+  const socket = useSocket();
 
   useEffect(() => {
     if (!userEmail.trim()) {
@@ -53,6 +56,11 @@ const AddNewUser = ({ id: projectId }: Props) => {
     return () => clearTimeout(delay);
   }, [userEmail]);
 
+  useEffect(() => {
+    if (!socket) return;
+    console.log("hello");
+  }, [socket]);
+
   async function handleAddUser(e?: React.FormEvent) {
     e?.preventDefault();
     if (!selectedUser) return;
@@ -62,7 +70,11 @@ const AddNewUser = ({ id: projectId }: Props) => {
     try {
       const res = await axios.post(
         "http://localhost:3000/api/project/send-request",
-        { memberId: selectedUser._id, projectId }, // Adjust payload as needed
+        {
+          memberId: selectedUser._id,
+          username: selectedUser.username,
+          projectId,
+        }, // Adjust payload as needed
         { withCredentials: true }
       );
 
@@ -98,7 +110,7 @@ const AddNewUser = ({ id: projectId }: Props) => {
             <div className="w-10 h-10 bg-[#93deff] rounded-xl flex items-center justify-center">
               <Plus size={20} className="text-[#323643]" />
             </div>
-            Create New Task
+            Create New User
           </DialogTitle>
           <DialogDescription className="text-[#606470] text-base">
             Add a new task to your project and stay organized
@@ -179,24 +191,6 @@ const AddNewUser = ({ id: projectId }: Props) => {
               </div>
             </div>
           )}
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 bg-[#323643] hover:bg-[#323643]/90 text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Adding
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Plus size={16} />
-                Add User
-              </div>
-            )}
-          </Button>
         </form>
       </DialogContent>
     </Dialog>

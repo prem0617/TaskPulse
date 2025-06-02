@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import AssignTaskDialog from "./AssignTask";
 import {
@@ -10,8 +10,12 @@ import {
   FileText,
   ArrowRight,
   ArrowLeft,
+  Trash2Icon,
 } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
+import { useSocket } from "@/hooks/useSokect";
+import type { IBackendData } from "../SocketListener";
+import type { Project } from "../Project/AllProjects";
 
 interface Props {
   id: string; // projectId
@@ -23,7 +27,7 @@ export interface Task {
   description: string;
   dueDate: Date;
   status: "To Do" | "In Progress" | "Done";
-  projectId?: string;
+  projectId: Project;
   assignedTo: AssignTo;
   createdAt: Date;
   updatedAt: Date;
@@ -41,6 +45,7 @@ interface Data {
 }
 
 const AllTasks = ({ id }: Props) => {
+  const socket = useSocket();
   const [tasks, setTasks] = useState<Task[]>([]);
   const { user } = useAuthContext();
   // console.log(tasks);
@@ -56,6 +61,7 @@ const AllTasks = ({ id }: Props) => {
         { withCredentials: true }
       );
       setTasks(response.data.tasks);
+      console.log(response);
     } catch (error) {
       console.error(error);
     } finally {
@@ -93,12 +99,6 @@ const AllTasks = ({ id }: Props) => {
     );
   };
 
-  const tasksByStatus = {
-    "To Do": tasks.filter((task) => task.status === "To Do"),
-    "In Progress": tasks.filter((task) => task.status === "In Progress"),
-    Done: tasks.filter((task) => task.status === "Done"),
-  };
-
   async function handleChangeStatus(data: Data) {
     const { status, taskId } = data;
     // API CALL
@@ -116,6 +116,60 @@ const AllTasks = ({ id }: Props) => {
       console.log(error);
     }
   }
+
+  const handleDeleteTask = async (taskId: string) => {
+    console.log(taskId);
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/task/delete-task?taskId=${taskId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  console.log(tasks);
+
+  const { ToDoTasks, InProgressTasks, DoneTasks } = useMemo(() => {
+    const ToDoTasks = tasks.filter((t) => t.status === "To Do");
+    const InProgressTasks = tasks.filter((t) => t.status === "In Progress");
+    const DoneTasks = tasks.filter((t) => t.status === "Done");
+
+    return { ToDoTasks, InProgressTasks, DoneTasks };
+  }, [tasks]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    function handleChangeTaskStatus(data: IBackendData) {
+      const { task } = data;
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
+    }
+
+    function handleAddNewTask(data: IBackendData) {
+      const { task } = data;
+      setTasks((prev) => [...prev, task]);
+    }
+
+    function handleDeleteTask(data: Task) {
+      console.log(data);
+
+      setTasks((prev) => prev.filter((t) => t._id !== data._id));
+    }
+
+    socket.on("change-task-status", handleChangeTaskStatus);
+    socket.on("new-task", handleAddNewTask);
+    socket.on("delete-task", handleDeleteTask);
+
+    return () => {
+      socket.off("change-task-status", handleChangeTaskStatus);
+      socket.off("new-task", handleAddNewTask);
+    };
+  }, [socket]);
 
   if (loading) {
     return (
@@ -155,7 +209,7 @@ const AllTasks = ({ id }: Props) => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[#323643]">
-                    {tasksByStatus["To Do"].length}
+                    {ToDoTasks.length}
                   </p>
                   <p className="text-sm text-[#606470]">To Do</p>
                 </div>
@@ -169,7 +223,7 @@ const AllTasks = ({ id }: Props) => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[#323643]">
-                    {tasksByStatus["In Progress"].length}
+                    {InProgressTasks.length}
                   </p>
                   <p className="text-sm text-[#606470]">In Progress</p>
                 </div>
@@ -183,7 +237,7 @@ const AllTasks = ({ id }: Props) => {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-[#323643]">
-                    {tasksByStatus["Done"].length}
+                    {DoneTasks.length}
                   </p>
                   <p className="text-sm text-[#606470]">Completed</p>
                 </div>
@@ -213,10 +267,10 @@ const AllTasks = ({ id }: Props) => {
                 <Circle size={20} className="text-[#606470]" />
                 <h3 className="text-lg font-semibold text-[#323643]">To Do</h3>
                 <span className="bg-gray-100 text-[#606470] text-xs px-2 py-1 rounded-full">
-                  {tasksByStatus["To Do"].length}
+                  {ToDoTasks.length}
                 </span>
               </div>
-              {tasksByStatus["To Do"].map((task) => (
+              {ToDoTasks.map((task) => (
                 <div
                   key={task._id}
                   className="bg-white border border-[#93deff]/20 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#93deff]/40"
@@ -224,12 +278,23 @@ const AllTasks = ({ id }: Props) => {
                   <div className="flex items-start gap-3 mb-3">
                     <div className="mt-1">{getStatusIcon(task.status)}</div>
                     <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-[#323643] mb-2">
-                        {task.title}
-                      </h4>
-                      <p className="text-[#606470] text-sm leading-relaxed mb-3">
-                        {task.description}
-                      </p>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-lg font-semibold text-[#323643] mb-2">
+                            {task.title}
+                          </h4>
+                          <p className="text-[#606470] text-sm leading-relaxed mb-3">
+                            {task.description}
+                          </p>
+                        </div>
+                        {task.projectId.createdBy === user?.id && (
+                          <div>
+                            <button onClick={() => handleDeleteTask(task._id)}>
+                              <Trash2Icon />
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-2 mb-3">
                         <Calendar size={12} className="text-[#606470]" />
@@ -261,7 +326,7 @@ const AllTasks = ({ id }: Props) => {
                         <AssignTaskDialog taskId={task._id} />
                       )}
                     </div>
-                    {task.assignedTo.id === user?.id && (
+                    {task.assignedTo?.id === user?.id && (
                       <button
                         onClick={() =>
                           handleChangeStatus({
@@ -288,10 +353,10 @@ const AllTasks = ({ id }: Props) => {
                   In Progress
                 </h3>
                 <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
-                  {tasksByStatus["In Progress"].length}
+                  {InProgressTasks.length}
                 </span>
               </div>
-              {tasksByStatus["In Progress"].map((task) => (
+              {InProgressTasks.map((task) => (
                 <div
                   key={task._id}
                   className="bg-white border border-[#93deff]/20 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#93deff]/40"
@@ -377,10 +442,10 @@ const AllTasks = ({ id }: Props) => {
                 <CheckCircle2 size={20} className="text-green-600" />
                 <h3 className="text-lg font-semibold text-[#323643]">Done</h3>
                 <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
-                  {tasksByStatus["Done"].length}
+                  {DoneTasks.length}
                 </span>
               </div>
-              {tasksByStatus["Done"].map((task) => (
+              {DoneTasks.map((task) => (
                 <div
                   key={task._id}
                   className="bg-white border border-[#93deff]/20 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#93deff]/40 opacity-90"
