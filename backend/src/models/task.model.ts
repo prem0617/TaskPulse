@@ -9,6 +9,9 @@ export interface ITask extends Document {
   dueDate?: Date;
   assignedTo?: IUser["_id"];
   projectId: IProject["_id"];
+
+  priority: "low" | "medium" | "high";
+  labels: string[]; // e.g., ['bug', 'frontend', 'urgent']
 }
 
 const taskSchema = new Schema<ITask>(
@@ -23,6 +26,16 @@ const taskSchema = new Schema<ITask>(
     dueDate: { type: Date },
     assignedTo: { type: Schema.Types.ObjectId, ref: "User" },
     projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+    labels: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

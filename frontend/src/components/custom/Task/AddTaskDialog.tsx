@@ -11,8 +11,15 @@ import {
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Plus, Flag, Tag, X } from "lucide-react";
 import useActivityLogger from "@/hooks/useActivityLogger";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   id: string; // projectId
@@ -21,6 +28,8 @@ interface Props {
 interface TaskFormData {
   title: string;
   description: string;
+  priority: "low" | "medium" | "high";
+  labels: string[];
 }
 
 const AddTaskDialog = ({ id }: Props) => {
@@ -28,19 +37,65 @@ const AddTaskDialog = ({ id }: Props) => {
   const [formData, setFormData] = useState<TaskFormData>({
     title: "",
     description: "",
+    priority: "medium",
+    labels: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [labelInput, setLabelInput] = useState("");
 
   const { addActivityLog } = useActivityLogger();
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handlePriorityChange = (value: "low" | "medium" | "high") => {
+    setFormData((prev) => ({
+      ...prev,
+      priority: value,
+    }));
+  };
+
+  const addLabel = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && labelInput.trim()) {
+      e.preventDefault();
+      const newLabel = labelInput.trim().toLowerCase();
+      if (!formData.labels.includes(newLabel)) {
+        setFormData((prev) => ({
+          ...prev,
+          labels: [...prev.labels, newLabel],
+        }));
+      }
+      setLabelInput("");
+    }
+  };
+
+  const removeLabel = (labelToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      labels: prev.labels.filter((label) => label !== labelToRemove),
+    }));
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "low":
+        return "text-green-600 bg-green-50 border-green-200";
+      default:
+        return "text-gray-600 bg-gray-50 border-gray-200";
+    }
   };
 
   async function handleTaskCreation(e: React.FormEvent) {
@@ -64,12 +119,15 @@ const AddTaskDialog = ({ id }: Props) => {
       setFormData({
         title: "",
         description: "",
+        priority: "medium",
+        labels: [],
       });
+      setLabelInput("");
 
       await addActivityLog({
         projectId: id,
         action: "New task created",
-        extraInfo: `${response.data.newTask.title} is created`,
+        extraInfo: `${response.data.newTask.title} is created with ${formData.priority} priority`,
       });
     } catch (error) {
       console.error("Error creating task:", error);
@@ -92,7 +150,7 @@ const AddTaskDialog = ({ id }: Props) => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-[#f7f7f7] border-none shadow-2xl rounded-2xl max-w-md w-full">
+      <DialogContent className="bg-[#f7f7f7] border-none shadow-2xl rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-3 pb-6">
           <DialogTitle className="text-2xl font-bold text-[#323643] flex items-center gap-3">
             <div className="w-10 h-10 bg-[#93deff] rounded-xl flex items-center justify-center">
@@ -136,6 +194,72 @@ const AddTaskDialog = ({ id }: Props) => {
               rows={3}
               className="w-full bg-white border-2 border-[#93deff]/30 focus:border-[#93deff] px-4 py-3 rounded-xl text-[#323643] placeholder-[#606470]/60 transition-colors duration-200 focus:outline-none resize-none"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-[#323643] flex items-center gap-2">
+              <Flag size={16} />
+              Priority
+            </label>
+            <Select
+              value={formData.priority}
+              onValueChange={handlePriorityChange}
+            >
+              <SelectTrigger
+                className={`w-full border-2 border-[#93deff]/30 focus:border-[#93deff] px-4 py-3 rounded-xl transition-colors duration-200 focus:outline-none ${getPriorityColor(
+                  formData.priority
+                )}`}
+              >
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="low" className="text-green-600">
+                  Low Priority
+                </SelectItem>
+                <SelectItem value="medium" className="text-yellow-600">
+                  Medium Priority
+                </SelectItem>
+                <SelectItem value="high" className="text-red-600">
+                  High Priority
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-[#323643] flex items-center gap-2">
+              <Tag size={16} />
+              Labels
+            </label>
+            <input
+              type="text"
+              value={labelInput}
+              onChange={(e) => setLabelInput(e.target.value)}
+              onKeyDown={addLabel}
+              placeholder="Type a label and press Enter..."
+              className="w-full bg-white border-2 border-[#93deff]/30 focus:border-[#93deff] px-4 py-3 rounded-xl text-[#323643] placeholder-[#606470]/60 transition-colors duration-200 focus:outline-none"
+            />
+            {formData.labels.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {formData.labels.map((label, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 bg-[#93deff]/20 text-[#323643] px-3 py-1 rounded-full text-sm font-medium border border-[#93deff]/30"
+                  >
+                    <Tag size={12} />
+                    {label}
+                    <button
+                      type="button"
+                      onClick={() => removeLabel(label)}
+                      className="ml-1 hover:text-red-600 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
