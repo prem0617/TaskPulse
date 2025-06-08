@@ -97,7 +97,10 @@ export async function getProject(req: Request, res: Response) {
       return;
     }
 
-    const project = await projectModel.findById(projectId);
+    const project = await projectModel
+      .findById(projectId)
+      .populate("members")
+      .populate("pendingMembers");
 
     res.json({ message: "Project fetched", project });
     return;
@@ -112,6 +115,13 @@ export async function getProject(req: Request, res: Response) {
 
 export async function sendRequest(req: Request, res: Response) {
   try {
+    const user = req.user;
+    // console.log(user);
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
     const { memberId, projectId, username } = req.body;
     if (!memberId || !projectId) {
       res
@@ -130,10 +140,21 @@ export async function sendRequest(req: Request, res: Response) {
       project.members?.includes(memberId) ||
       project.pendingMembers?.includes(memberId)
     ) {
-      res.status(400).json({
-        error: "User already a member or request pending",
+      const receiverId = getReceiverSocketId(user.id);
+
+      console.log(receiverId);
+      if (receiverId) {
+        console.log("inside socket");
+        io.to(receiverId).emit("invite-new-member", {
+          message: `User is already invited or joined into thus Project`,
+          project: null,
+        });
+      }
+      res.status(200).json({
+        alredyJoined: "User already a member or request pending",
         success: false,
       });
+
       return;
     }
 
@@ -144,10 +165,20 @@ export async function sendRequest(req: Request, res: Response) {
 
     const roomName = project.id;
 
-    io.to(roomName).emit(
-      "invite-msg",
-      `${username} is invited to this Project`
-    );
+    const receiverId = getReceiverSocketId(memberId);
+
+    console.log(receiverId);
+    if (receiverId) {
+      io.to(receiverId).emit("invite-member", {
+        message: `You invited in ${project.title}`,
+        project,
+      });
+    }
+
+    io.to(roomName).emit("invite-msg", {
+      message: `${username} is invited to ${project.title} Project`,
+      project,
+    });
 
     return;
   } catch (error) {
@@ -197,6 +228,8 @@ export async function acceptRequest(req: Request, res: Response) {
       return;
     }
 
+    console.log(user);
+
     project.pendingMembers.pull(user.id);
     project.members.push(user.id);
 
@@ -208,21 +241,18 @@ export async function acceptRequest(req: Request, res: Response) {
     const socketId = getReceiverSocketId(user.id);
     console.log(socketId, "socketId");
     if (socketId) {
-      console.log("inside socket");
       const socket = io.sockets.sockets.get(socketId);
       if (socket) {
         socket.join(roomName);
         const userFromDB = await userModel.findById(user.id);
         userFromDB.rooms.push(roomName);
         await userFromDB.save();
-        io.to(roomName).emit(
-          "accept-msg",
-          `${user.username} accepted invite request`
-        );
+        io.to(roomName).emit("accept-msg", {
+          message: `${user.username} accepted invite request`,
+          project,
+        });
       }
     }
-
-    console.log("outside socket");
 
     res.json({ message: "You are now part of the project", project });
     return;

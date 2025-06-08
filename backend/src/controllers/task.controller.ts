@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
+
 import taskModel from "../models/task.model";
 import projectModel from "../models/project.model";
-
-import mongoose from "mongoose";
 import { getReceiverSocketId, io } from "../socket/socket.io";
+import { scheduleEmailReminder } from "../bullMq/scheduleEmailReminder";
 
 export async function addTask(req: Request, res: Response) {
   try {
@@ -13,9 +14,9 @@ export async function addTask(req: Request, res: Response) {
       res.status(404).json({ error: "User not found", success: false });
       return;
     }
-    const { title, description, dueDate, projectId } = req.body;
+    const { title, description, projectId } = req.body;
 
-    if (!title || !description || !dueDate || !projectId) {
+    if (!title || !description || !projectId) {
       res
         .status(400)
         .json({ error: "Please fill all the required fields", success: false });
@@ -25,7 +26,6 @@ export async function addTask(req: Request, res: Response) {
     const taskData = {
       title,
       description,
-      dueDate,
       projectId,
     };
 
@@ -70,7 +70,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
       return;
     }
     // console.log(req.body);
-    const { userId, taskId, projectId } = req.body;
+    const { userId, taskId, projectId, dueDate, email } = req.body;
 
     const project = await projectModel.findById(projectId);
 
@@ -121,6 +121,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
     }
 
     task.assignedTo = userId;
+    task.dueDate = dueDate;
 
     await task.save();
 
@@ -133,7 +134,12 @@ export async function assignedTaskTo(req: Request, res: Response) {
       );
     }
 
-    res.json({ message: `Task is assigned to user ${userId} `, success: true });
+    await scheduleEmailReminder({ task, email, dueDate });
+
+    res.json({
+      message: `Task is assigned to user and Task reminder scheduled successfully.${userId} `,
+      success: true,
+    });
 
     return;
   } catch (error) {

@@ -43,6 +43,7 @@ export async function login(req: Request, res: Response) {
       name: user.name,
       email: user.email,
       role: user.role,
+      username: user.username,
     };
 
     const token = generateTokenAndStoreCookie({ payload, res });
@@ -100,6 +101,7 @@ export async function signup(req: Request, res: Response) {
       name: newUser.name,
       email: newUser.email,
       role: newUser.role,
+      username: newUser.username,
     };
 
     // Generate token and set cookie

@@ -26,6 +26,9 @@ const AssignTaskDialog = ({ taskId }: Props) => {
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
+  // New dueDate state
+  const [dueDate, setDueDate] = useState<string>("");
+
   useEffect(() => {
     if (!userDetail.trim()) {
       setSuggestions([]);
@@ -51,8 +54,14 @@ const AssignTaskDialog = ({ taskId }: Props) => {
     return () => clearTimeout(delay);
   }, [userDetail]);
 
+  console.log(selectedUser);
+
   const assignUser = async () => {
     if (!selectedUser) return;
+    if (!dueDate) {
+      toast.error("Please select a due date");
+      return;
+    }
     setLoading(true);
     try {
       const response = await axios.post(
@@ -61,6 +70,8 @@ const AssignTaskDialog = ({ taskId }: Props) => {
           userId: selectedUser._id,
           taskId,
           projectId,
+          dueDate, // Send dueDate to backend
+          email: selectedUser.email,
         },
         { withCredentials: true }
       );
@@ -69,8 +80,9 @@ const AssignTaskDialog = ({ taskId }: Props) => {
       setUserDetails("");
       setSuggestions([]);
       setSelectedUser(null);
+      setDueDate(""); // Reset dueDate after success
     } catch (err: any) {
-      toast.error(err.response.data.error);
+      toast.error(err.response?.data?.error || "Failed to assign task");
       console.error(err);
     } finally {
       setLoading(false);
@@ -154,6 +166,24 @@ const AssignTaskDialog = ({ taskId }: Props) => {
             )}
           </div>
 
+          {/* Due Date Input */}
+          {/* Due Date & Time Input */}
+          <div className="pt-4">
+            <label
+              htmlFor="dueDate"
+              className="block pb-1 text-sm font-medium text-[#323643]"
+            >
+              Due Date & Time
+            </label>
+            <input
+              type="datetime-local"
+              id="dueDate"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full bg-white border-2 border-[#93deff]/30 focus:border-[#93deff] px-4 py-2 rounded-xl text-[#323643] placeholder-[#606470]/60 transition-all duration-200 focus:outline-none focus:shadow-lg"
+            />
+          </div>
+
           {/* Selected User Display */}
           {selectedUser && (
             <div className="bg-[#93deff]/10 border-2 border-[#93deff]/30 rounded-xl p-4">
@@ -183,7 +213,7 @@ const AssignTaskDialog = ({ taskId }: Props) => {
                   </button>
                   <button
                     onClick={assignUser}
-                    disabled={loading}
+                    disabled={loading || !dueDate}
                     className="bg-[#323643] hover:bg-[#323643]/90 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {loading ? (

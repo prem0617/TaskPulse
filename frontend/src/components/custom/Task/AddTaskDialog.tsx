@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Calendar, FileText, Plus } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 
 interface Props {
   id: string; // projectId
@@ -20,7 +20,6 @@ interface Props {
 interface TaskFormData {
   title: string;
   description: string;
-  dueDate: string;
 }
 
 const AddTaskDialog = ({ id }: Props) => {
@@ -28,7 +27,6 @@ const AddTaskDialog = ({ id }: Props) => {
   const [formData, setFormData] = useState<TaskFormData>({
     title: "",
     description: "",
-    dueDate: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,7 +61,6 @@ const AddTaskDialog = ({ id }: Props) => {
       setFormData({
         title: "",
         description: "",
-        dueDate: "",
       });
     } catch (error) {
       console.error("Error creating task:", error);
@@ -129,21 +126,6 @@ const AddTaskDialog = ({ id }: Props) => {
               placeholder="Describe your task..."
               rows={3}
               className="w-full bg-white border-2 border-[#93deff]/30 focus:border-[#93deff] px-4 py-3 rounded-xl text-[#323643] placeholder-[#606470]/60 transition-colors duration-200 focus:outline-none resize-none"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-[#323643] flex items-center gap-2">
-              <Calendar size={16} />
-              Due Date
-            </label>
-            <input
-              type="date"
-              name="dueDate"
-              value={formData.dueDate}
-              onChange={handleChange}
-              required
-              className="w-full bg-white border-2 border-[#93deff]/30 focus:border-[#93deff] px-4 py-3 rounded-xl text-[#323643] transition-colors duration-200 focus:outline-none"
             />
           </div>
 

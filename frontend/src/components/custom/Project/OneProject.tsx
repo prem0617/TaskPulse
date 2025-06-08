@@ -15,13 +15,23 @@ import {
 } from "lucide-react";
 import AddNewUser from "../Task/AddNewUser";
 import { useAuthContext } from "@/context/AuthContext";
+import { useSocket } from "@/hooks/useSokect";
+import type { SocketData } from "../Request";
+import toast from "react-hot-toast";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  username: string;
+}
 
 interface Project {
   createdAt: Date;
   createdBy: string;
   description: string;
-  members: string[];
-  pendingMembers: string[];
+  members: User[];
+  pendingMembers: User[];
   title: string;
   updatedAt: Date;
 }
@@ -30,6 +40,8 @@ const OneProject = () => {
   const { id } = useParams();
 
   const { user } = useAuthContext();
+
+  const socket = useSocket();
 
   const userId = user?.id;
 
@@ -42,6 +54,9 @@ const OneProject = () => {
     title: "",
     updatedAt: new Date(),
   });
+
+  // console.log(projectData);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -53,7 +68,7 @@ const OneProject = () => {
         { projectId: id },
         { withCredentials: true }
       );
-      console.log(response);
+      // console.log(response);
       setProjectData(response.data.project);
     } catch (error) {
       console.log(error);
@@ -68,6 +83,28 @@ const OneProject = () => {
       fetchProject();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    console.log("socket");
+    function handleAlreadyInvited(data: SocketData) {
+      console.log("socket");
+      console.log(data);
+      setTimeout(() => {
+        toast.success(data.message, {
+          position: "bottom-right",
+        });
+      }, 300);
+    }
+
+    socket.on("invite-new-member", handleAlreadyInvited);
+    console.log("hello");
+
+    return () => {
+      socket.off("invite-new-member", handleAlreadyInvited);
+    };
+  }, [socket]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -308,12 +345,17 @@ const OneProject = () => {
                 >
                   <div className="w-10 h-10 bg-[#93deff] rounded-full flex items-center justify-center">
                     <span className="text-[#323643] font-semibold">
-                      {member.charAt(0).toUpperCase()}
+                      {member.username.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-[#323643]">{member}</p>
-                    <p className="text-sm text-[#606470]">Team Member</p>
+                    <p className="font-medium text-[#323643]">
+                      {member.username}
+                    </p>
+                    <div className="flex justify-center items-center w-full gap-10">
+                      <p className="text-sm text-[#606470]">{member.name}</p>
+                      <p className="text-sm text-[#606470]">Team Member</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -346,11 +388,13 @@ const OneProject = () => {
                     >
                       <div className="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center">
                         <span className="text-yellow-800 font-semibold">
-                          {member.charAt(0).toUpperCase()}
+                          {member?.username?.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium text-[#323643]">{member}</p>
+                        <p className="font-medium text-[#323643]">
+                          {member?.username}
+                        </p>
                         <p className="text-sm text-yellow-700">
                           Invitation Pending
                         </p>

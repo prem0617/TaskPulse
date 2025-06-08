@@ -7,10 +7,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useSocket } from "@/hooks/useSokect";
+
 import axios from "axios";
 import { Check, FileText, Mail, Plus, User, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface User {
   _id: string;
@@ -30,7 +31,6 @@ const AddNewUser = ({ id: projectId }: Props) => {
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [_isSearching, setIsSearching] = useState(false);
-  const socket = useSocket();
 
   useEffect(() => {
     if (!userEmail.trim()) {
@@ -56,11 +56,6 @@ const AddNewUser = ({ id: projectId }: Props) => {
     return () => clearTimeout(delay);
   }, [userEmail]);
 
-  useEffect(() => {
-    if (!socket) return;
-    console.log("hello");
-  }, [socket]);
-
   async function handleAddUser(e?: React.FormEvent) {
     e?.preventDefault();
     if (!selectedUser) return;
@@ -77,6 +72,10 @@ const AddNewUser = ({ id: projectId }: Props) => {
         }, // Adjust payload as needed
         { withCredentials: true }
       );
+
+      if (res.data.alredyJoined) {
+        toast.success(res.data.alredyJoined);
+      }
 
       console.log("API Response:", res.data);
       // You can show a toast here on success

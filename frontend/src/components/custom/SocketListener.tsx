@@ -3,6 +3,7 @@ import { useSocket } from "@/hooks/useSokect";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import type { Task } from "./Task/AllTaks";
+import type { SocketData } from "./Request";
 
 export interface IBackendData {
   message: string;
@@ -15,17 +16,17 @@ const SocketListener = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleAcceptMessage = (data: any) => {
+    const handleAcceptMessage = (data: SocketData) => {
       console.log(data);
       setTimeout(() => {
-        toast.success(data);
+        toast.success(data.message);
       }, 300);
     };
 
-    function handleInviteMessage(data: any) {
+    function handleInviteMessage(data: SocketData) {
       console.log(data);
       setTimeout(() => {
-        toast.success(data);
+        toast.success(data.message);
       }, 300);
     }
 

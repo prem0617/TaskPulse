@@ -50,7 +50,7 @@ const AllTasks = ({ id }: Props) => {
   const { user } = useAuthContext();
   // console.log(tasks);
   const [loading, setLoading] = useState(true);
-  console.log(id);
+  // console.log(id);
 
   async function fetchTasks() {
     try {
@@ -61,7 +61,7 @@ const AllTasks = ({ id }: Props) => {
         { withCredentials: true }
       );
       setTasks(response.data.tasks);
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.error(error);
     } finally {
@@ -132,7 +132,7 @@ const AllTasks = ({ id }: Props) => {
     }
   };
 
-  console.log(tasks);
+  // console.log(tasks);
 
   const { ToDoTasks, InProgressTasks, DoneTasks } = useMemo(() => {
     const ToDoTasks = tasks.filter((t) => t.status === "To Do");
@@ -318,12 +318,16 @@ const AllTasks = ({ id }: Props) => {
 
                   {/* Move Task Button */}
                   <div className="flex justify-between items-center pt-3 border-t border-[#93deff]/20">
-                    <div className="flex items-center gap-2">
-                      <User size={14} className="text-[#606470]" />
+                    <div className="flex items-center justify-center w-full gap-2">
                       {task.assignedTo ? (
-                        <div>Assigned To {task.assignedTo.name}</div>
+                        task.assignedTo.id !== user?.id && (
+                          <div>Assigned To {task.assignedTo.name}</div>
+                        )
                       ) : (
-                        <AssignTaskDialog taskId={task._id} />
+                        <>
+                          <User size={14} className="text-[#606470]" />
+                          <AssignTaskDialog taskId={task._id} />
+                        </>
                       )}
                     </div>
                     {task.assignedTo?.id === user?.id && (
@@ -392,43 +396,48 @@ const AllTasks = ({ id }: Props) => {
                   </div>
 
                   {/* Move Task Buttons */}
-                  <div className="flex justify-between items-center pt-3 border-t border-[#93deff]/20">
+                  <div className="flex justify-center items-center pt-3 border-t border-[#93deff]/20">
                     <div className="flex items-center gap-2">
-                      <User size={14} className="text-[#606470]" />
                       {task.assignedTo ? (
-                        <div>Assigned To {task.assignedTo.name}</div>
+                        task.assignedTo.id !== user?.id && (
+                          <div>Assigned To {task.assignedTo.name}</div>
+                        )
                       ) : (
-                        <AssignTaskDialog taskId={task._id} />
+                        <>
+                          <User size={14} className="text-[#606470]" />
+                          <AssignTaskDialog taskId={task._id} />
+                        </>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-between w-full">
                       {task.assignedTo.id === user?.id && (
-                        <button
-                          onClick={() =>
-                            handleChangeStatus({
-                              taskId: task._id,
-                              status: "To Do",
-                            })
-                          }
-                          className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full transition-colors"
-                        >
-                          <ArrowLeft size={12} />
-                          Back
-                        </button>
-                      )}
-                      {task.assignedTo.id === user?.id && (
-                        <button
-                          onClick={() =>
-                            handleChangeStatus({
-                              taskId: task._id,
-                              status: "Done",
-                            })
-                          }
-                          className="flex items-center gap-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full transition-colors"
-                        >
-                          <ArrowRight size={12} />
-                          Done
-                        </button>
+                        <>
+                          <button
+                            onClick={() =>
+                              handleChangeStatus({
+                                taskId: task._id,
+                                status: "To Do",
+                              })
+                            }
+                            className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            <ArrowLeft size={12} />
+                            Back
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              handleChangeStatus({
+                                taskId: task._id,
+                                status: "Done",
+                              })
+                            }
+                            className="flex items-center gap-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-full transition-colors"
+                          >
+                            <ArrowRight size={12} />
+                            Done
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -472,14 +481,18 @@ const AllTasks = ({ id }: Props) => {
                   {/* Move Task Button */}
                   <div className="flex justify-between items-center pt-3 border-t border-[#93deff]/20">
                     <div className="flex items-center gap-2">
-                      <User size={14} className="text-[#606470]" />
                       {task.assignedTo ? (
-                        <div>Assigned To {task.assignedTo.name}</div>
+                        task.assignedTo.id !== user?.id && (
+                          <div>Assigned To {task.assignedTo.name}</div>
+                        )
                       ) : (
-                        <AssignTaskDialog taskId={task._id} />
+                        <>
+                          <User size={14} className="text-[#606470]" />
+                          <AssignTaskDialog taskId={task._id} />
+                        </>
                       )}
                     </div>
-                    {task._id === user?.id && (
+                    {task.assignedTo.id === user?.id && (
                       <button
                         onClick={() =>
                           handleChangeStatus({

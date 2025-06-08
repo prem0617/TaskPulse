@@ -1,6 +1,7 @@
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import {
+  editProfile,
   getUser,
   searchUser,
   userInviteRequest,
@@ -9,6 +10,7 @@ import {
 const router = express.Router();
 
 router.post("/getUser", authMiddleware, getUser);
+router.post("/editProfile", authMiddleware, editProfile);
 router.get("/search", authMiddleware, searchUser);
 router.get("/invite-request", authMiddleware, userInviteRequest);
 
