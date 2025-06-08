@@ -11,7 +11,7 @@ import {
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Flag, Tag, X } from "lucide-react";
+import { FileText, Plus, Flag, Tag, X, Upload, Image } from "lucide-react";
 import useActivityLogger from "@/hooks/useActivityLogger";
 import {
   Select,
@@ -30,6 +30,7 @@ interface TaskFormData {
   description: string;
   priority: "low" | "medium" | "high";
   labels: string[];
+  imageFiles: File[];
 }
 
 const AddTaskDialog = ({ id }: Props) => {
@@ -39,6 +40,7 @@ const AddTaskDialog = ({ id }: Props) => {
     description: "",
     priority: "medium",
     labels: [],
+    imageFiles: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [labelInput, setLabelInput] = useState("");
@@ -85,6 +87,43 @@ const AddTaskDialog = ({ id }: Props) => {
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter((file) => {
+      // Accept common image formats and documents
+      const validTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "application/pdf",
+        "text/plain",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      return validTypes.includes(file.type) && file.size <= 10 * 1024 * 1024; // 10MB limit
+    });
+
+    if (validFiles.length !== files.length) {
+      toast.error(
+        "Some files were skipped. Only images, PDFs, and documents under 10MB are allowed."
+      );
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      imageFiles: [...prev.imageFiles, ...validFiles],
+    }));
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      imageFiles: prev.imageFiles.filter((_, index) => index !== indexToRemove),
+    }));
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
@@ -98,20 +137,40 @@ const AddTaskDialog = ({ id }: Props) => {
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
   async function handleTaskCreation(e: React.FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("projectId", id);
+      formDataToSend.append("priority", formData.priority);
+      formDataToSend.append("labels", JSON.stringify(formData.labels));
+
+      // Attach multiple files
+      formData.imageFiles.forEach((file: File) => {
+        formDataToSend.append("attachments", file);
+      });
+
       const response = await axios.post(
         "http://localhost:3000/api/task/add-task",
+        formDataToSend,
         {
-          ...formData,
-          projectId: id,
-        },
-        { withCredentials: true }
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
-
+      console.log(formDataToSend);
       console.log("Task Created:", response.data);
       toast.success(response.data.message);
 
@@ -121,6 +180,7 @@ const AddTaskDialog = ({ id }: Props) => {
         description: "",
         priority: "medium",
         labels: [],
+        imageFiles: [],
       });
       setLabelInput("");
 
@@ -258,6 +318,78 @@ const AddTaskDialog = ({ id }: Props) => {
                     </button>
                   </span>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* File Upload Section */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-[#323643] flex items-center gap-2">
+              <Upload size={16} />
+              Attachments
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.txt"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="w-full bg-white border-2 border-dashed border-[#93deff]/30 hover:border-[#93deff] px-4 py-6 rounded-xl text-center transition-colors duration-200 cursor-pointer">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-[#93deff]/20 rounded-full flex items-center justify-center">
+                    <Upload size={20} className="text-[#323643]" />
+                  </div>
+                  <p className="text-[#323643] font-medium">
+                    Click to upload files
+                  </p>
+                  <p className="text-[#606470]/60 text-sm">
+                    Images, PDFs, and documents (Max 10MB each)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Display selected files */}
+            {formData.imageFiles.length > 0 && (
+              <div className="space-y-2 mt-3">
+                <p className="text-sm font-medium text-[#323643]">
+                  Selected Files:
+                </p>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {formData.imageFiles.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-white border border-[#93deff]/30 px-3 py-2 rounded-lg"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-[#93deff]/20 rounded-lg flex items-center justify-center">
+                          {file.type.startsWith("image/") ? (
+                            <Image size={14} className="text-[#323643]" />
+                          ) : (
+                            <FileText size={14} className="text-[#323643]" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#323643] truncate">
+                            {file.name}
+                          </p>
+                          <p className="text-xs text-[#606470]/60">
+                            {formatFileSize(file.size)}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="text-[#606470] hover:text-red-600 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

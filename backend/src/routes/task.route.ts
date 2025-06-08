@@ -6,10 +6,16 @@ import {
   deleteTask,
   modifyStatus,
 } from "../controllers/task.controller";
+import { upload } from "../middlewares/multer";
 
 const router = express.Router();
 
-router.post("/add-task", authMiddleware, addTask);
+router.post(
+  "/add-task",
+  authMiddleware,
+  upload.array("attachments", 10),
+  addTask
+);
 router.post("/assign-task", authMiddleware, assignedTaskTo);
 router.post("/modify-task-status", authMiddleware, modifyStatus);
 router.get("/delete-task", authMiddleware, deleteTask);

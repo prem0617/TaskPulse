@@ -2,6 +2,14 @@ import mongoose, { Schema, Document, model } from "mongoose";
 import { IUser } from "./user.model";
 import { IProject } from "./project.model";
 
+export interface IAttachment {
+  filename: string;
+  originalname: string;
+  mimetype: string;
+  size: number;
+  url?: string;
+}
+
 export interface ITask extends Document {
   title: string;
   description?: string;
@@ -12,7 +20,17 @@ export interface ITask extends Document {
 
   priority: "low" | "medium" | "high";
   labels: string[]; // e.g., ['bug', 'frontend', 'urgent']
+
+  attachments: IAttachment[];
 }
+
+const attachmentSchema = new Schema<IAttachment>({
+  filename: { type: String, required: true },
+  originalname: { type: String, required: true },
+  mimetype: { type: String, required: true },
+  size: { type: Number, required: true },
+  url: { type: String },
+});
 
 const taskSchema = new Schema<ITask>(
   {
@@ -34,6 +52,11 @@ const taskSchema = new Schema<ITask>(
     },
     labels: {
       type: [String],
+      default: [],
+    },
+
+    attachments: {
+      type: [attachmentSchema],
       default: [],
     },
   },

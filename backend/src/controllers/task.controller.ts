@@ -6,27 +6,79 @@ import projectModel from "../models/project.model";
 import { getReceiverSocketId, io } from "../socket/socket.io";
 import { scheduleEmailReminder } from "../bullMq/scheduleEmailReminder";
 
+import fs from "fs";
+import cloudinary from "../lib/cloudinary";
+
+interface MulterFile extends Express.Multer.File {
+  path: string; // when disk storage is used
+}
+
 export async function addTask(req: Request, res: Response) {
   try {
     const user = req.user;
-    console.log(user);
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
     }
-    const { title, description, projectId } = req.body;
-
-    if (!title || !description || !projectId) {
-      res
-        .status(400)
-        .json({ error: "Please fill all the required fields", success: false });
-      return;
-    }
-
-    const taskData = {
+    const {
       title,
       description,
       projectId,
+      status,
+      dueDate,
+      assignedTo,
+      priority,
+      labels,
+    } = req.body;
+
+    console.log({ body: req.body, files: req.files });
+
+    if (!title || !projectId) {
+      res
+        .status(400)
+        .json({ error: "Title and ProjectId are required", success: false });
+      return;
+    }
+
+    // Process files if any (req.files from multer)
+    const files = req.files as MulterFile[] | undefined;
+
+    // Upload files to Cloudinary and prepare attachments array
+    const attachments = [];
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        // Upload to Cloudinary
+        const uploadResult = await cloudinary.uploader.upload(file.path, {
+          folder: "Task Management", // optional folder in Cloudinary
+          resource_type: "auto",
+        });
+
+        // Push file info + URL to attachments array
+        attachments.push({
+          filename: file.filename,
+          originalname: file.originalname,
+          mimetype: file.mimetype,
+          size: file.size,
+          url: uploadResult.secure_url,
+        });
+
+        // Remove local file after upload
+        fs.unlinkSync(file.path);
+      }
+    }
+
+    // Build the task data object with attachments
+    const taskData = {
+      title,
+      description,
+      status: status || "To Do",
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      assignedTo,
+      projectId,
+      priority: priority || "medium",
+      labels: labels ? JSON.parse(labels) : [], // labels sent as JSON string from frontend
+      attachments,
     };
 
     const newTaskDoc = new taskModel(taskData);
@@ -37,9 +89,8 @@ export async function addTask(req: Request, res: Response) {
       select: "name description createdBy",
     });
 
-    const newTask = newTaskDoc;
-
     const socketId = getReceiverSocketId(user.id);
+    const newTask = newTaskDoc;
 
     console.log(newTask);
 
@@ -55,14 +106,18 @@ export async function addTask(req: Request, res: Response) {
       }
     }
 
-    res.json({ message: "New task is created", newTask, success: true });
-
+    res.json({
+      message: "New task created",
+      newTask: newTaskDoc,
+      success: true,
+    });
     return;
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ error: "Server error while creating task", success: false });
+    res.status(500).json({
+      error: "Server error while creating task",
+      success: false,
+    });
     return;
   }
 }
