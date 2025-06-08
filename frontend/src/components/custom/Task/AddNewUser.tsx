@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import useActivityLogger from "@/hooks/useActivityLogger";
 
 import axios from "axios";
 import { Check, FileText, Mail, Plus, User, UserPlus } from "lucide-react";
@@ -31,6 +32,8 @@ const AddNewUser = ({ id: projectId }: Props) => {
   const [suggestions, setSuggestions] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [_isSearching, setIsSearching] = useState(false);
+
+  const { addActivityLog } = useActivityLogger();
 
   useEffect(() => {
     if (!userEmail.trim()) {
@@ -83,6 +86,12 @@ const AddNewUser = ({ id: projectId }: Props) => {
       setUserEmail("");
       setSelectedUser(null);
       setOpenDialog(false);
+
+      await addActivityLog({
+        projectId: projectId,
+        action: "New member inivited",
+        extraInfo: `${selectedUser.username} is invited to the project`,
+      });
     } catch (error) {
       console.error("Error sending request:", error);
       // You can show a toast here on error
@@ -109,7 +118,7 @@ const AddNewUser = ({ id: projectId }: Props) => {
             <div className="w-10 h-10 bg-[#93deff] rounded-xl flex items-center justify-center">
               <Plus size={20} className="text-[#323643]" />
             </div>
-            Create New User
+            Add New User
           </DialogTitle>
           <DialogDescription className="text-[#606470] text-base">
             Add a new task to your project and stay organized

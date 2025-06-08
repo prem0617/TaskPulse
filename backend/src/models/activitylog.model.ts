@@ -1,27 +1,27 @@
 import mongoose, { Schema, Document, model } from "mongoose";
 import { IUser } from "./user.model";
+import { IProject } from "./project.model";
 import { ITask } from "./task.model";
 
 export interface IActivityLog extends Document {
-  taskId: ITask["_id"];
-  userId: IUser["_id"];
-  action: "created" | "updated" | "moved" | "commented";
-  details?: string;
+  userId: IUser["_id"]; // Who did the action
+  projectId: IProject["_id"]; // Project related to the action
+  taskId?: ITask["_id"]; // Optional: specific task involved
+  action: string; // e.g., 'assigned task', 'status changed'
+  extraInfo?: string; // e.g., task title, old status
+  timestamp: Date;
 }
 
 const activityLogSchema = new Schema<IActivityLog>(
   {
-    taskId: { type: Schema.Types.ObjectId, ref: "Task", required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    action: {
-      type: String,
-      enum: ["created", "updated", "moved", "commented"],
-      required: true,
-    },
-    details: { type: String },
+    projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+    taskId: { type: Schema.Types.ObjectId, ref: "Task" },
+    action: { type: String, required: true },
+    extraInfo: { type: String },
   },
   {
-    timestamps: { createdAt: true, updatedAt: false },
+    timestamps: true,
   }
 );
 

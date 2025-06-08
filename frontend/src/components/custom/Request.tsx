@@ -12,6 +12,8 @@ import {
   Users,
   FolderOpen,
 } from "lucide-react";
+import useActivityLogger from "@/hooks/useActivityLogger";
+import { useAuthContext } from "@/context/AuthContext";
 
 interface CreatedBy {
   name: string;
@@ -44,6 +46,10 @@ const Request = () => {
   const [inviteProjects, setInviteProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingRequests, setAcceptingRequests] = useState<string[]>([]);
+
+  const { user } = useAuthContext();
+
+  const { addActivityLog } = useActivityLogger(); // use the hook
 
   const socket = useSocket();
 
@@ -108,9 +114,17 @@ const Request = () => {
         { projectId },
         { withCredentials: true }
       );
+
       console.log(response.data.message);
+
+      // ✅ Log the activity
+      await addActivityLog({
+        projectId,
+        action: "Accepted invite request",
+        extraInfo: `${user?.name} accepted invitation to project ${projectId}`,
+      });
     } catch (error) {
-      console.error(error);
+      console.error("Error accepting request or adding log:", error);
     } finally {
       setAcceptingRequests((prev) => prev.filter((id) => id !== projectId));
     }

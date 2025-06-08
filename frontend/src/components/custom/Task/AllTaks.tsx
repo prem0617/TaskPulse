@@ -16,6 +16,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useSocket } from "@/hooks/useSokect";
 import type { IBackendData } from "../SocketListener";
 import type { Project } from "../Project/AllProjects";
+import useActivityLogger from "@/hooks/useActivityLogger";
 
 interface Props {
   id: string; // projectId
@@ -52,6 +53,9 @@ const AllTasks = ({ id }: Props) => {
   const [loading, setLoading] = useState(true);
   // console.log(id);
 
+  const { addActivityLog } = useActivityLogger();
+
+  console.log(tasks);
   async function fetchTasks() {
     try {
       setLoading(true);
@@ -112,6 +116,11 @@ const AllTasks = ({ id }: Props) => {
         { withCredentials: true }
       );
       console.log(response);
+      await addActivityLog({
+        projectId: id,
+        action: "Task Status Changed",
+        extraInfo: `Task : ${response.data.task.title} is Status is Changed`,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -127,6 +136,12 @@ const AllTasks = ({ id }: Props) => {
         }
       );
       console.log(response);
+
+      await addActivityLog({
+        projectId: id,
+        action: "Task Deleted",
+        extraInfo: `Task : ${response.data.task.title} is deleted`,
+      });
     } catch (error) {
       console.log(error);
     }

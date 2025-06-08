@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import toast from "react-hot-toast";
+import useActivityLogger from "@/hooks/useActivityLogger";
 
 interface ProjectData {
   title: string;
@@ -30,6 +31,8 @@ const CreateProject = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const { addActivityLog } = useActivityLogger();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -44,6 +47,14 @@ const CreateProject = () => {
       toast.success("Project created successfully!");
       setFormData({ title: "", description: "" });
       setIsSuccess(true);
+
+      const project = response.data.newProject;
+
+      await addActivityLog({
+        projectId: project._id,
+        action: "project created",
+        extraInfo: `${project.title} is created`,
+      });
 
       // Reset success state after 3 seconds
       setTimeout(() => setIsSuccess(false), 3000);

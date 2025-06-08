@@ -3,6 +3,7 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import {
   acceptRequest,
   createProject,
+  deleteProject,
   getProject,
   getProjects,
   invitedProjects,
@@ -19,5 +20,6 @@ router.post("/get-one-project/:id", authMiddleware, getProject);
 router.post("/send-request", authMiddleware, sendRequest);
 router.post("/accept-request", authMiddleware, acceptRequest);
 router.post("/get-tasks", authMiddleware, getTasks);
+router.post("/delete-project", authMiddleware, deleteProject);
 
 export default router;

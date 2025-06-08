@@ -8,7 +8,10 @@ import {
   Clock,
   Plus,
   ArrowRight,
+  Trash2,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useSocket } from "@/hooks/useSokect";
 
 export interface Project {
   _id: string;
@@ -22,9 +25,16 @@ export interface Project {
   __v: number; // Version key used by Mongoose
 }
 
+interface DeleteProjectData {
+  e: React.MouseEvent<HTMLButtonElement> | React.FormEvent<HTMLFormElement>;
+  projectId: string;
+}
+
 const AllProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const socket = useSocket();
 
   const fetchAllProjects = async () => {
     try {
@@ -54,6 +64,40 @@ const AllProjects = () => {
       year: "numeric",
     });
   };
+
+  const handleDelete = async (data: DeleteProjectData) => {
+    const { e, projectId } = data;
+    e.preventDefault();
+
+    try {
+      await axios.post(
+        "http://localhost:3000/api/project/delete-project",
+        { projectId },
+        { withCredentials: true }
+      );
+
+      // Remove from UI
+      // setProjects((prev: Project[]) => prev.filter((p) => p._id !== projectId));
+      toast.success("Project deleted!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete project");
+    }
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    function handleDeleteProject({ projectId }: { projectId: string }) {
+      setProjects((prev) => prev.filter((p) => p._id !== projectId));
+    }
+
+    socket.on("delete-project", handleDeleteProject);
+
+    return () => {
+      socket.off("delete-project", handleDeleteProject);
+    };
+  }, [socket]);
 
   if (loading) {
     return (
@@ -175,10 +219,16 @@ const AllProjects = () => {
                     <div className="w-14 h-14 bg-[#93deff]/20 rounded-2xl flex items-center justify-center">
                       <FolderOpen size={28} className="text-[#323643]" />
                     </div>
-                    <ArrowRight
-                      size={20}
-                      className="text-[#606470] group-hover:text-[#323643] group-hover:translate-x-1 transition-all duration-300"
-                    />
+                    <div className="flex justify-center items-center gap-5">
+                      <button
+                        onClick={(e) =>
+                          handleDelete({ projectId: project._id, e })
+                        }
+                        className="cursor-pointer px-2 py-2 bg-red-100 rounded-md"
+                      >
+                        <Trash2 className="bg-transparent text-red-500" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Project Title */}

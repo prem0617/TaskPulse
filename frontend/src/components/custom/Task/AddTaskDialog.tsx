@@ -12,6 +12,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { FileText, Plus } from "lucide-react";
+import useActivityLogger from "@/hooks/useActivityLogger";
 
 interface Props {
   id: string; // projectId
@@ -29,6 +30,8 @@ const AddTaskDialog = ({ id }: Props) => {
     description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { addActivityLog } = useActivityLogger();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -61,6 +64,12 @@ const AddTaskDialog = ({ id }: Props) => {
       setFormData({
         title: "",
         description: "",
+      });
+
+      await addActivityLog({
+        projectId: id,
+        action: "New task created",
+        extraInfo: `${response.data.newTask.title} is created`,
       });
     } catch (error) {
       console.error("Error creating task:", error);

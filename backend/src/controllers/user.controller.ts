@@ -12,12 +12,22 @@ export async function searchUser(req: Request, res: Response) {
   }
 
   try {
+    const user = req.user;
+    // console.log(user);
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
     const users = await userModel
       .find({
         name: { $regex: query, $options: "i" },
       })
       .limit(5);
-    res.json(users);
+
+    const userToSend = users.filter((u) => u.id !== user.id);
+    console.log(userToSend);
+    res.json(userToSend);
   } catch (error) {
     console.error("Search error:", error);
     res.status(500).json({ message: "Server error" });

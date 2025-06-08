@@ -29,9 +29,15 @@ export async function addTask(req: Request, res: Response) {
       projectId,
     };
 
-    const newTask = new taskModel(taskData);
+    const newTaskDoc = new taskModel(taskData);
+    await newTaskDoc.save();
 
-    await newTask.save();
+    await newTaskDoc.populate({
+      path: "projectId",
+      select: "name description createdBy",
+    });
+
+    const newTask = newTaskDoc;
 
     const socketId = getReceiverSocketId(user.id);
 
@@ -139,6 +145,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
     res.json({
       message: `Task is assigned to user and Task reminder scheduled successfully.${userId} `,
       success: true,
+      task,
     });
 
     return;
@@ -267,7 +274,7 @@ export async function deleteTask(req: Request, res: Response) {
       }
     }
 
-    res.json({ message: "Task deleted", success: true });
+    res.json({ message: "Task deleted", success: true, task });
     return;
   } catch (error) {
     console.error(error);

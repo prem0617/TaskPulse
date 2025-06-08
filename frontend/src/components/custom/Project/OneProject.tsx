@@ -18,6 +18,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useSocket } from "@/hooks/useSokect";
 import type { SocketData } from "../Request";
 import toast from "react-hot-toast";
+import ActivityLogs from "./ActivityLogs";
 
 interface User {
   _id: string;
@@ -421,6 +422,9 @@ const OneProject = () => {
 
           <div className="p-8">
             <AllTasks id={id} />
+          </div>
+          <div className="p-8">
+            <ActivityLogs id={id} />
           </div>
         </div>
       </div>

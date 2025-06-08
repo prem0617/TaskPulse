@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.route";
 import projectRoutes from "./routes/projects.route";
 import taskRoutes from "./routes/task.route";
 import userRoutes from "./routes/user.route";
+import logsRoutes from "./routes/logs.route";
 
 import { server, app } from "./socket/socket.io";
 
@@ -29,6 +30,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/task", taskRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/logs", logsRoutes);
 
 // Basic route
 app.get("/", (_req: Request, res: Response) => {

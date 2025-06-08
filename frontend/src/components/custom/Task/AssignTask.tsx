@@ -6,6 +6,7 @@ import { useParams } from "react-router";
 
 import { DialogContent, Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import useActivityLogger from "@/hooks/useActivityLogger";
 
 interface Props {
   taskId: string;
@@ -26,8 +27,9 @@ const AssignTaskDialog = ({ taskId }: Props) => {
   const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  // New dueDate state
   const [dueDate, setDueDate] = useState<string>("");
+
+  const { addActivityLog } = useActivityLogger();
 
   useEffect(() => {
     if (!userDetail.trim()) {
@@ -54,8 +56,6 @@ const AssignTaskDialog = ({ taskId }: Props) => {
     return () => clearTimeout(delay);
   }, [userDetail]);
 
-  console.log(selectedUser);
-
   const assignUser = async () => {
     if (!selectedUser) return;
     if (!dueDate) {
@@ -81,6 +81,12 @@ const AssignTaskDialog = ({ taskId }: Props) => {
       setSuggestions([]);
       setSelectedUser(null);
       setDueDate(""); // Reset dueDate after success
+
+      await addActivityLog({
+        projectId: projectId!,
+        action: "Assigned task",
+        extraInfo: `Task : ${response.data.task.title} is assigned to ${selectedUser.name}`,
+      });
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to assign task");
       console.error(err);

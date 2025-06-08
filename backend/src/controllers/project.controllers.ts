@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import projectModel from "../models/project.model";
 import { getReceiverSocketId, io } from "../socket/socket.io";
 import userModel from "../models/user.model";
+import taskModel from "../models/task.model";
 
 export async function createProject(req: Request, res: Response) {
   try {
@@ -290,5 +291,62 @@ export async function invitedProjects(req: Request, res: Response) {
       success: false,
     });
     return;
+  }
+}
+
+export async function deleteProject(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    if (!user || !user.id) {
+      res.status(404).json({ error: "User not found", success: false });
+      return;
+    }
+
+    const { projectId } = req.body;
+    console.log("first");
+    console.log(projectId);
+    if (!projectId) {
+      res.status(400).json({ error: "Project ID is required", success: false });
+      return;
+    }
+
+    const project = await projectModel.findById(projectId);
+    if (!project) {
+      res.status(404).json({ error: "Project not found", success: false });
+      return;
+    }
+
+    if (project.createdBy.toString() !== user.id) {
+      res
+        .status(403)
+        .json({ error: "Unauthorized to delete this project", success: false });
+      return;
+    }
+
+    // Delete the project
+    await projectModel.findByIdAndDelete(projectId);
+
+    // Delete all tasks associated with this project
+    await taskModel.deleteMany({ projectId });
+
+    io.to(projectId).emit("delete-project", {
+      projectId,
+    });
+
+    // Remove this project room from ALL users
+    await userModel.updateMany(
+      { rooms: projectId },
+      { $pull: { rooms: projectId } }
+    );
+
+    res.json({
+      message: "Project and associated room removed from all users",
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Server error while deleting project", success: false });
   }
 }
