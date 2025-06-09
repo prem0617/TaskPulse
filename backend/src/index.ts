@@ -15,8 +15,6 @@ import chatRoutes from "./routes/chat.route";
 
 import { server, app } from "./socket/socket.io";
 
-const PORT = 3000;
-
 // Middleware to parse JSON
 app.use(express.json());
 app.use(
@@ -40,6 +38,14 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Start the server
+
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  connectDB();
+});
+
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   connectDB();
