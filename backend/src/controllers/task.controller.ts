@@ -195,6 +195,10 @@ export async function assignedTaskTo(req: Request, res: Response) {
       );
     }
 
+    io.to(projectId).emit("assign-task-general", {
+      task,
+    });
+
     await scheduleEmailReminder({ task, email, dueDate });
 
     res.json({

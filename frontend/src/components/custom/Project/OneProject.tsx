@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
-import AllTasks from "../Task/AllTaks";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useSocket } from "@/hooks/useSokect";
@@ -14,6 +13,7 @@ import ProjectHeader from "./ProjectHeader";
 import ProjectStats from "./ProjectStats";
 import TeamMember from "./TeamMember";
 import ErrorSkeleton from "../common/ErrorSkeleton";
+import TaskCalendar from "../Task/TaskCalendar";
 
 export interface Project {
   createdAt: Date;
@@ -154,7 +154,7 @@ const OneProject = () => {
       <ProjectHeader id={id} projectData={projectData} userId={user.id} />
 
       {/* Project Stats */}
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-6xl space-y-8 mx-auto p-8">
         <ProjectStats projectData={projectData} />
 
         {/* Team Members Section */}
@@ -168,15 +168,20 @@ const OneProject = () => {
               Project Tasks
             </h2>
             <p className="text-[#606470] mt-2">
-              Manage and track all tasks for this project
+              Manage and track all tasks for this project in calendar or kanban
+              view
             </p>
           </div>
 
           <div className="p-8">
-            <AllTasks id={id} />
+            <TaskCalendar id={id} />
           </div>
-          <div className="p-8">
-            <ActivityLogs id={id} />
+        </div>
+        <div className="bg-white rounded-2xl shadow-lg border border-[#93deff]/20">
+          <div className="p-8 border-b border-[#93deff]/20">
+            <div className="p-8">
+              <ActivityLogs id={id} />
+            </div>
           </div>
         </div>
       </div>

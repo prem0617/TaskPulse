@@ -118,3 +118,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* FullCalendar CSS */
+@import "@fullcalendar/core/main.css";
+@import "@fullcalendar/daygrid/main.css";
+@import "@fullcalendar/timegrid/main.css";
+@import "@fullcalendar/list/main.css";
+
+/* Custom FullCalendar styling */
+.fc-event {
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  padding: 2px 4px !important;
+}
+
+.fc-event-title {
+  font-weight: 500 !important;
+}
+
+.fc-daygrid-event {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.fc-toolbar {
+  margin-bottom: 1rem !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #323643 !important;
+}
+
+.fc-button {
+  background-color: #323643 !important;
+  border-color: #323643 !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.fc-button:hover {
+  background-color: #93deff !important;
+  border-color: #93deff !important;
+}
+
+.fc-button-active {
+  background-color: #93deff !important;
+  border-color: #93deff !important;
+}
+
+.fc-today {
+  background-color: rgba(147, 222, 255, 0.1) !important;
+}
