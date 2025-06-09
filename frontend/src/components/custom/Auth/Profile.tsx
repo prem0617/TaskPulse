@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router";
 import { User, Mail, Calendar, ArrowLeft, Edit, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../Task/LoadingSpinner";
 
 interface User {
   id: string;
@@ -104,15 +105,7 @@ const Profile = () => {
   };
 
   if (loading) {
-    return (
-      <div className="p-8 bg-[#f7f7f7] min-h-screen">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-[#93deff] border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!user) {

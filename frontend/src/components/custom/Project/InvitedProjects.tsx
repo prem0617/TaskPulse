@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { Link } from "react-router";
+import LoadingSpinner from "../Task/LoadingSpinner";
 
 interface Project {
   _id: string;
@@ -49,7 +50,7 @@ const InvitedProjects = () => {
     fetchInvitedProjects();
   }, []);
 
-  if (loading) return <div>Loading invited projects...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div>{error}</div>;
 
   const formatDate = (dateString: string) => {

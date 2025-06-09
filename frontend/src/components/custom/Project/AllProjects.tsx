@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSocket } from "@/hooks/useSokect";
+import LoadingSpinner from "../Task/LoadingSpinner";
 
 export interface Project {
   _id: string;
@@ -100,18 +101,7 @@ const AllProjects = () => {
   }, [socket]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f7f7f7] p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-[#93deff] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-[#606470] text-lg">Loading your projects...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

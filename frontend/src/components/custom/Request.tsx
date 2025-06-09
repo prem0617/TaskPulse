@@ -11,11 +11,11 @@ import {
   Check,
   Users,
   FolderOpen,
-  Plus,
 } from "lucide-react";
 import useActivityLogger from "@/hooks/useActivityLogger";
 import { useAuthContext } from "@/context/AuthContext";
-import { Link } from "react-router";
+
+import LoadingSpinner from "./Task/LoadingSpinner";
 
 interface CreatedBy {
   name: string;
@@ -143,15 +143,7 @@ const Request = () => {
   };
 
   if (loading) {
-    return (
-      <div className="p-8 bg-[#f7f7f7] min-h-screen">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-[#93deff] border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
