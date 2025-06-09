@@ -178,7 +178,7 @@ const OneProject = () => {
           </div>
         </div>
         <div className="bg-white rounded-2xl shadow-lg border border-[#93deff]/20">
-          <div className="p-8 border-b border-[#93deff]/20">
+          <div className="md:p-8 border-b border-[#93deff]/20">
             <div className="p-8">
               <ActivityLogs id={id} />
             </div>

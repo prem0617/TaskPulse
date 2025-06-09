@@ -6,7 +6,9 @@ import projectModel from "../models/project.model";
 import { getReceiverSocketId, io } from "../socket/socket.io";
 import { scheduleEmailReminder } from "../bullMq/scheduleEmailReminder";
 
-import fs from "fs";
+import { emailQueue } from "../bullMq/emailQueue"; // adjust path if needed
+
+import fs, { stat } from "fs";
 import cloudinary from "../lib/cloudinary";
 
 interface MulterFile extends Express.Multer.File {
@@ -86,7 +88,7 @@ export async function addTask(req: Request, res: Response) {
 
     await newTaskDoc.populate({
       path: "projectId",
-      select: "name description createdBy",
+      select: "title description createdBy",
     });
 
     const socketId = getReceiverSocketId(user.id);
@@ -99,7 +101,7 @@ export async function addTask(req: Request, res: Response) {
         const socket = io.sockets.sockets.get(socketId);
         if (socket) {
           io.to(projectId).emit("new-task", {
-            message: `${title} is added as new task by admin`,
+            message: `${title} is added as new task by admin in ${newTaskDoc.projectId.title}`,
             task: newTask,
           });
         }
@@ -186,6 +188,12 @@ export async function assignedTaskTo(req: Request, res: Response) {
 
     await task.save();
 
+    await task.save();
+    const populatedTask = await taskModel
+      .findById(task._id)
+      .populate("assignedTo", "name email")
+      .populate("projectId");
+
     const receiverId = getReceiverSocketId(userId);
     console.log(receiverId, "receiverId");
     if (receiverId) {
@@ -196,7 +204,7 @@ export async function assignedTaskTo(req: Request, res: Response) {
     }
 
     io.to(projectId).emit("assign-task-general", {
-      task,
+      task: populatedTask,
     });
 
     await scheduleEmailReminder({ task, email, dueDate });
@@ -220,23 +228,13 @@ export async function assignedTaskTo(req: Request, res: Response) {
 export async function modifyStatus(req: Request, res: Response) {
   try {
     const user = req.user;
-    // console.log(user);
     if (!user || !user.id) {
       res.status(404).json({ error: "User not found", success: false });
       return;
     }
 
     const { taskId, status } = req.body;
-
-    console.log({ taskId, status });
-
     const task = await taskModel.findById(taskId).populate("assignedTo");
-
-    console.log(task);
-
-    const projectId = task.projectId.toString();
-
-    console.log(projectId);
 
     if (!task) {
       res.status(404).json({ error: "Task is not Found", success: false });
@@ -245,30 +243,37 @@ export async function modifyStatus(req: Request, res: Response) {
 
     if (task.assignedTo._id.toString() !== user.id) {
       res.status(400).json({
-        error:
-          "You don't have access to change the status of task because it is not assign to you",
+        error: "You don't have access to change the status of this task",
         success: false,
       });
       return;
     }
 
     task.status = status;
-
     await task.save();
+    console.log({ task, status });
+    // 👇 Cancel scheduled email reminder if task is marked as "Done"
+    if (status === "Done") {
+      const jobId = `reminder-${task._id}`;
+      try {
+        await emailQueue.remove(jobId);
+        console.log(`Cancelled reminder job: ${jobId}`);
+      } catch (err: any) {
+        console.error(`Failed to remove job ${jobId}:`, err.message);
+      }
+    }
 
+    const projectId = task.projectId.toString();
     const socketId = getReceiverSocketId(user.id);
-
     const message = `${task.title} is now in the "${status}" stage.`;
 
     if (socketId) {
-      if (socketId) {
-        const socket = io.sockets.sockets.get(socketId);
-        if (socket) {
-          io.to(projectId).emit("change-task-status", {
-            message,
-            task,
-          });
-        }
+      const socket = io.sockets.sockets.get(socketId);
+      if (socket) {
+        io.to(projectId).emit("change-task-status", {
+          message,
+          task,
+        });
       }
     }
 
@@ -276,9 +281,10 @@ export async function modifyStatus(req: Request, res: Response) {
     return;
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({ error: "Server error while modify task status", success: false });
+    res.status(500).json({
+      error: "Server error while modifying task status",
+      success: false,
+    });
     return;
   }
 }

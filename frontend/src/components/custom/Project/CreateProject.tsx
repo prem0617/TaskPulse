@@ -7,7 +7,7 @@ import {
   ArrowLeft,
   Check,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import useActivityLogger from "@/hooks/useActivityLogger";
 
@@ -17,6 +17,8 @@ interface ProjectData {
 }
 
 const CreateProject = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState<ProjectData>({
     title: "",
     description: "",
@@ -57,7 +59,7 @@ const CreateProject = () => {
       });
 
       // Reset success state after 3 seconds
-      setTimeout(() => setIsSuccess(false), 3000);
+      setTimeout(() => (setIsSuccess(false), navigate("/projects")), 3000);
     } catch (error) {
       console.error("Error creating project:", error);
       toast.error("Failed to create project. Please try again.");

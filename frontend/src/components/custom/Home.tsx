@@ -46,7 +46,7 @@ const Home = () => {
       borderColor: "border-blue-200",
     },
     {
-      title: "Invite Requests",
+      title: "Project Requests",
       description: "Manage pending project invitations",
       icon: Mail,
       link: "/invite-request",

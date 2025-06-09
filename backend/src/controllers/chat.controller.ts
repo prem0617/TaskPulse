@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import projectModel from "../models/project.model";
 import chatModel from "../models/chat.model";
 import { io } from "../socket/socket.io";
+import mongoose from "mongoose";
 
 export const sendMessage = async (req: Request, res: Response) => {
   try {
@@ -32,8 +33,20 @@ export const sendMessage = async (req: Request, res: Response) => {
       return;
     }
 
-    if (!project.members?.includes(userId)) {
-      res.status(403).json({ message: "Access denied: Not a project member" });
+    console.log(project);
+
+    // Convert all member ObjectIds to strings
+    const memberIds = project.members.map((m: mongoose.Types.ObjectId) =>
+      m.toString()
+    );
+
+    const isMember = memberIds.includes(userId);
+    const isCreator = project.createdBy.toString() === userId;
+
+    if (!isMember && !isCreator) {
+      res
+        .status(403)
+        .json({ message: "Access denied: Not a project member or creator" });
       return;
     }
 

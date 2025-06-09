@@ -144,43 +144,14 @@ const AllProjects = () => {
 
           {/* Stats Card */}
           <div className="bg-white rounded-3xl p-6 shadow-lg border border-[#93deff]/20">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-[#93deff]/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <FolderOpen size={24} className="text-[#323643]" />
-                </div>
-                <p className="text-3xl font-bold text-[#323643]">
-                  {projects.length}
-                </p>
-                <p className="text-[#606470]">Total Projects</p>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-[#93deff]/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <FolderOpen size={24} className="text-[#323643]" />
               </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-[#93deff]/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <Users size={24} className="text-[#323643]" />
-                </div>
-                <p className="text-3xl font-bold text-[#323643]">
-                  {projects.reduce(
-                    (total, project) => total + project.members.length,
-                    0
-                  )}
-                </p>
-                <p className="text-[#606470]">Team Members</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-[#93deff]/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <Clock size={24} className="text-[#323643]" />
-                </div>
-                <p className="text-3xl font-bold text-[#323643]">
-                  {
-                    projects.filter(
-                      (p) =>
-                        new Date(p.updatedAt) >
-                        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-                    ).length
-                  }
-                </p>
-                <p className="text-[#606470]">Active This Week</p>
-              </div>
+              <p className="text-3xl font-bold text-[#323643]">
+                {projects.length}
+              </p>
+              <p className="text-[#606470]">Total Projects</p>
             </div>
           </div>
         </div>

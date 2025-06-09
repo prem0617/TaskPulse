@@ -88,7 +88,7 @@ function ActivityLogs({ id: projectId }: { id: string }) {
   }, [socket]);
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="md:p-4 space-y-4">
       <h2 className="text-2xl font-bold">📋 Activity Logs</h2>
 
       {loading ? (

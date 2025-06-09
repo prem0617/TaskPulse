@@ -152,7 +152,7 @@ const TaskCalendar = ({ id }: Props) => {
 
     function handleAssignTask(data: IBackendData) {
       const { task } = data;
-      setTasks((prev) => [...prev, task]);
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? task : t)));
     }
 
     socket.on("change-task-status", handleChangeTaskStatus);
@@ -164,11 +164,11 @@ const TaskCalendar = ({ id }: Props) => {
       socket.off("change-task-status", handleChangeTaskStatus);
       socket.off("new-task", handleAddNewTask);
       socket.off("delete-task", handleDeleteTask);
+      socket.off("assign-task-general", handleAssignTask);
     };
   }, [socket]);
 
   // Convert tasks to FullCalendar events format
-
   const calendarEvents = useMemo(() => {
     return tasks
       .filter((task) => task.dueDate) // Only include tasks that have a due date
@@ -220,8 +220,8 @@ const TaskCalendar = ({ id }: Props) => {
         };
       });
   }, [tasks]);
-  // Handle event click
 
+  // Handle event click
   const handleEventClick = (eventInfo: any) => {
     const event = eventInfo.event;
     const extendedProps = event.extendedProps;
@@ -251,23 +251,26 @@ const TaskCalendar = ({ id }: Props) => {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full px-4 sm:px-6 lg:px-0">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#323643] rounded-2xl flex items-center justify-center">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#323643] rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto sm:mx-0">
               {viewMode === "calendar" ? (
-                <CalendarIcon size={24} className="text-[#93deff]" />
+                <CalendarIcon
+                  size={20}
+                  className="sm:w-6 sm:h-6 text-[#93deff]"
+                />
               ) : (
-                <FileText size={24} className="text-[#93deff]" />
+                <FileText size={20} className="sm:w-6 sm:h-6 text-[#93deff]" />
               )}
             </div>
-            <div>
-              <h3 className="text-2xl font-bold text-[#323643]">
+            <div className="text-center sm:text-left">
+              <h3 className="text-xl sm:text-2xl font-bold text-[#323643]">
                 {viewMode === "calendar" ? "Task Calendar" : "All Tasks"}
               </h3>
-              <p className="text-[#606470]">
+              <p className="text-sm sm:text-base text-[#606470]">
                 {viewMode === "calendar"
                   ? "View and manage tasks in calendar format"
                   : "Manage and track your project tasks"}
@@ -276,28 +279,28 @@ const TaskCalendar = ({ id }: Props) => {
           </div>
 
           {/* View Toggle */}
-          <div className="flex items-center gap-2 bg-white rounded-xl p-2 shadow-lg border border-[#93deff]/20">
+          <div className="flex items-center gap-1 sm:gap-2 bg-white rounded-lg sm:rounded-xl p-1 sm:p-2 shadow-lg border border-[#93deff]/20 mx-auto sm:mx-0">
             <button
               onClick={() => setViewMode("tasks")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-md sm:rounded-lg text-sm sm:text-base font-medium transition-colors ${
                 viewMode === "tasks"
                   ? "bg-[#323643] text-white"
                   : "text-[#606470] hover:bg-gray-50"
               }`}
             >
-              <List size={18} />
-              Tasks
+              <List size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden xs:inline">Tasks</span>
             </button>
             <button
               onClick={() => setViewMode("calendar")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-md sm:rounded-lg text-sm sm:text-base font-medium transition-colors ${
                 viewMode === "calendar"
                   ? "bg-[#323643] text-white"
                   : "text-[#606470] hover:bg-gray-50"
               }`}
             >
-              <Calendar size={18} />
-              Calendar
+              <Calendar size={16} className="sm:w-[18px] sm:h-[18px]" />
+              <span className="hidden xs:inline">Calendar</span>
             </button>
           </div>
         </div>
@@ -311,28 +314,36 @@ const TaskCalendar = ({ id }: Props) => {
 
         {/* Legend for Calendar View */}
         {viewMode === "calendar" && (
-          <div className="flex items-center gap-6 text-sm text-[#606470] bg-gray-50 p-4 rounded-lg mt-4">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded"></div>
-              <span>To Do</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-xs sm:text-sm text-[#606470] bg-gray-50 p-3 sm:p-4 rounded-lg mt-4">
+            <div className="flex items-center justify-center sm:justify-start gap-4 sm:gap-6">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-500 rounded"></div>
+                <span>To Do</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-500 rounded"></div>
+                <span>In Progress</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded"></div>
+                <span>Done</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-              <span>In Progress</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded"></div>
-              <span>Done</span>
-            </div>
-            <div className="flex items-center gap-2 ml-4">
+            <div className="flex items-center justify-center sm:justify-start gap-2 sm:ml-4">
               <span>Priority:</span>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-gray-400 rounded" title="Low"></div>
                 <div
-                  className="w-3 h-3 bg-gray-600 rounded"
+                  className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-400 rounded"
+                  title="Low"
+                ></div>
+                <div
+                  className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-600 rounded"
                   title="Medium"
                 ></div>
-                <div className="w-3 h-3 bg-gray-800 rounded" title="High"></div>
+                <div
+                  className="w-2 h-2 sm:w-3 sm:h-3 bg-gray-800 rounded"
+                  title="High"
+                ></div>
               </div>
             </div>
           </div>
@@ -341,7 +352,7 @@ const TaskCalendar = ({ id }: Props) => {
 
       {/* Calendar View */}
       {viewMode === "calendar" && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-3 sm:p-6">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -361,6 +372,8 @@ const TaskCalendar = ({ id }: Props) => {
             displayEventTime={false}
             eventClassNames="cursor-pointer hover:opacity-80 transition-opacity"
             dayCellClassNames="hover:bg-gray-50 transition-colors"
+            // Custom styling for mobile
+            dayHeaderClassNames="text-xs sm:text-sm"
             // Custom styling
             eventDidMount={(info) => {
               // Add custom tooltip or styling here if needed
@@ -370,23 +383,23 @@ const TaskCalendar = ({ id }: Props) => {
         </div>
       )}
 
-      {/* tasks Board View */}
+      {/* Tasks Board View */}
       {viewMode === "tasks" && (
         <div className="">
           {tasks.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                <FileText size={32} className="text-[#606470]" />
+            <div className="text-center py-8 sm:py-12 bg-white rounded-lg">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4">
+                <FileText size={24} className="sm:w-8 sm:h-8 text-[#606470]" />
               </div>
-              <h3 className="text-xl font-semibold text-[#323643] mb-2">
+              <h3 className="text-lg sm:text-xl font-semibold text-[#323643] mb-2">
                 No tasks yet
               </h3>
-              <p className="text-[#606470]">
+              <p className="text-sm sm:text-base text-[#606470]">
                 Create your first task to get started
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <TaskColumn
                 title="To Do"
                 tasks={ToDoTasks}

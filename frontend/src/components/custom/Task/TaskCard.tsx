@@ -144,17 +144,7 @@ const TaskCard = ({
         );
 
       case "Done":
-        return (
-          <button
-            onClick={() =>
-              onChangeStatus({ taskId: task._id, status: "In Progress" })
-            }
-            className="flex items-center gap-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-full transition-colors"
-          >
-            <ArrowLeft size={12} />
-            Reopen
-          </button>
-        );
+        return <div className="text-sm">Task Done</div>;
 
       default:
         return null;
@@ -231,23 +221,25 @@ const TaskCard = ({
             )}
 
             {/* Due Date */}
-            <div className="flex items-center gap-2 mb-3">
-              <Calendar size={12} className="text-[#606470]" />
-              <span
-                className={`text-xs ${
-                  isOverdue(task.dueDate)
-                    ? "text-red-600 font-medium"
-                    : "text-[#606470]"
-                }`}
-              >
-                {formatDate(task.dueDate)}
-                {isOverdue(task.dueDate) && (
-                  <span className="ml-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
-                    Overdue
-                  </span>
-                )}
-              </span>
-            </div>
+            {task.dueDate && task.status !== "Done" && (
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar size={12} className="text-[#606470]" />
+                <span
+                  className={`text-xs ${
+                    isOverdue(task.dueDate)
+                      ? "text-red-600 font-medium"
+                      : "text-[#606470]"
+                  }`}
+                >
+                  {formatDate(task.dueDate)}
+                  {isOverdue(task.dueDate) && (
+                    <span className="ml-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                      Overdue
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

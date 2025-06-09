@@ -9,16 +9,20 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import axios from "axios";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
+    username: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,6 +40,7 @@ const Signup = () => {
       );
       toast.success("Account created successfully!");
       localStorage.setItem("tmtoken", response.data.token);
+      navigate("/");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Signup failed");
       console.error("Signup error:", error);
@@ -106,6 +111,29 @@ const Signup = () => {
                   type="text"
                   name="name"
                   value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+            </motion.div>
+
+            {/* User Name Field */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
                   onChange={handleInputChange}
                   className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   placeholder="Enter your full name"

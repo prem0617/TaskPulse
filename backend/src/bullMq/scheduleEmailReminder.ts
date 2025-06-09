@@ -11,25 +11,10 @@ export async function scheduleEmailReminder({
   email,
   dueDate,
 }: ReminderData) {
-  const reminderTime = new Date(dueDate).getTime() - 30 * 60 * 1000; // 30 mins before
+  const reminderTime = new Date(dueDate).getTime() - 24 * 60 * 60 * 1000;
   const delay = reminderTime - Date.now();
 
-  const extraTime = new Date(new Date().getTime() + delay);
-
-  console.log({
-    task,
-    email,
-    dueDate,
-    delay,
-    extraTime,
-  });
-  console.log(
-    "Reminder scheduled at:",
-    new Date(Date.now() + delay).toLocaleString("en-IN")
-  );
-
   if (delay > 0) {
-    console.log("Scheduling email reminder...");
     await emailQueue.add(
       "sendReminder",
       { task, email },
@@ -38,6 +23,7 @@ export async function scheduleEmailReminder({
         attempts: 3,
         removeOnComplete: true,
         removeOnFail: false,
+        jobId: `reminder-${task._id}`,
       }
     );
     console.log("Reminder scheduled!");

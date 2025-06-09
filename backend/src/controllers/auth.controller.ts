@@ -6,38 +6,34 @@ import { IPayload } from "../types/auth.types";
 
 export async function login(req: Request, res: Response) {
   try {
-    const { email, password } = await req.body;
+    const { email, password } = req.body;
+
     if (!email || !password) {
       res
         .status(400)
-        .json({ error: "Fill all the required field", success: false });
+        .json({ error: "Fill all the required fields", success: false });
       return;
     }
 
-    const user: IUser | null = await userModel.findOne({ email });
+    const identifier = email.toLowerCase(); // email or username input
+    let user: IUser | null = await userModel.findOne({
+      $or: [{ email: identifier }, { username: identifier }],
+    });
 
-    //   Check if user not found
+    // Check if user not found
     if (!user) {
-      res.status(404).json({ error: "User not Found", success: false });
+      res.status(404).json({ error: "User not found", success: false });
       return;
     }
 
-    // match the hashed and original password
-    const isPasswordMatched = await bcrypt.compare(
-      password,
-      user?.passwordHash
-    );
-
+    // Match password
+    const isPasswordMatched = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordMatched) {
-      res
-        .status(400)
-        .json({ error: "Password is not matched", success: false });
+      res.status(400).json({ error: "Invalid credentials", success: false });
       return;
     }
 
-    console.log(isPasswordMatched);
-
-    //   generate payload for cookies
+    // Create payload and token
     const payload: IPayload = {
       id: user._id,
       name: user.name,
@@ -48,7 +44,7 @@ export async function login(req: Request, res: Response) {
 
     const token = generateTokenAndStoreCookie({ payload, res });
 
-    res.json({ message: "User loggedin", token, success: true, user });
+    res.json({ message: "User logged in", token, success: true, user });
     return;
   } catch (error: any) {
     console.log(error);
@@ -63,22 +59,40 @@ export async function login(req: Request, res: Response) {
 
 export async function signup(req: Request, res: Response) {
   try {
-    console.log(req.body);
-    const { name, email, password, role } = req.body;
+    // console.log(req.body);
+    const { name, email, password, role, username } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !username) {
       res
         .status(400)
         .json({ error: "Fill all the required fields", success: false });
       return;
     }
 
-    // Check if user already exists
-    const existingUser: IUser | null = await userModel.findOne({ email });
-    if (existingUser) {
-      res
-        .status(409)
-        .json({ error: "User already exists with this email", success: false });
+    const emailLower = email.toLowerCase();
+    const usernameLower = username.toLowerCase();
+
+    // Check if user already exists by email
+    const existingUserEmail: IUser | null = await userModel.findOne({
+      email: emailLower,
+    });
+    if (existingUserEmail) {
+      res.status(409).json({
+        error: "Email address already exists. Try with a different email.",
+        success: false,
+      });
+      return;
+    }
+
+    // Check if username exists
+    const existingUsername: IUser | null = await userModel.findOne({
+      username: usernameLower,
+    });
+    if (existingUsername) {
+      res.status(409).json({
+        error: "Username already exists. Try with a different username.",
+        success: false,
+      });
       return;
     }
 
@@ -88,7 +102,8 @@ export async function signup(req: Request, res: Response) {
     // Create new user
     const newUser = new userModel({
       name,
-      email,
+      email: emailLower,
+      username: usernameLower,
       passwordHash,
       role,
     });
