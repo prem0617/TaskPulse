@@ -1,0 +1,9 @@
+MONGO_PASS = aORDgKqhDegvhVVy
+MONGO_URI = mongodb+srv://poojanpatel2121:aORDgKqhDegvhVVy@cluster0.e4mghzg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+JWT_SECRET = prem
+GMAIL_USER=poojanpatel2121@gmail.com
+GMAIL_PASS=eoreksfymuidupfp
+
+CLOUDINARY_CLOUD_NAME=dlabcdvri
+CLOUDINARY_API_KEY=659176746436374
+CLOUDINARY_API_SECRET=e4rCF0GZbsX-TrbQbIWPlBVmYGo

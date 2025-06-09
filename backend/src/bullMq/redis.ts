@@ -1,5 +1,3 @@
-export const connection = {
-  host: "127.0.0.1",
-  port: 6379,
-  maxRetriesPerRequest: null, // Required for BullMQ to avoid retry issues
-};
+import { Redis } from "ioredis";
+
+export const connection = new Redis(process.env.UPSTASH_REDIS_URL as string);
