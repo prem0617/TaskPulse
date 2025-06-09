@@ -254,18 +254,18 @@ const TaskCard = ({
         {/* Actions */}
         <div className="flex justify-between items-center pt-3 border-t border-[#93deff]/20">
           <div className="flex items-center gap-2">
-            {task.assignedTo ? (
-              task.assignedTo.id !== user?.id && (
-                <div className="text-sm text-[#606470]">
-                  Assigned to {task.assignedTo.name}
-                </div>
-              )
-            ) : (
-              <>
-                <User size={14} className="text-[#606470]" />
-                <AssignTaskDialog taskId={task._id} />
-              </>
-            )}
+            {task.assignedTo
+              ? task.assignedTo.id !== user?.id && (
+                  <div className="text-sm text-[#606470]">
+                    Assigned to {task.assignedTo.name}
+                  </div>
+                )
+              : user.id === task.projectId.createdBy && (
+                  <>
+                    <User size={14} className="text-[#606470]" />
+                    <AssignTaskDialog taskId={task._id} />
+                  </>
+                )}
           </div>
 
           <div className="flex items-center gap-2">{renderStatusButtons()}</div>

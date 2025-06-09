@@ -91,7 +91,7 @@ export async function getProject(req: Request, res: Response) {
       return;
     }
 
-    const { projectId } = req.body;
+    const { projectId } = req.params;
 
     if (!projectId) {
       res.status(404).json({ error: "Project id not found", success: false });

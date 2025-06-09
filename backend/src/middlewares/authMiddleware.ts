@@ -2,7 +2,6 @@ import { Response, NextFunction, Request } from "express";
 import jwt from "jsonwebtoken";
 
 import { IUser } from "../models/user.model";
-import { compileFunction } from "vm";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 

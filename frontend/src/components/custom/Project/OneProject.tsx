@@ -1,33 +1,21 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
-import AddTaskDialog from "../Task/AddTaskDialog";
 import AllTasks from "../Task/AllTaks";
-import {
-  ArrowLeft,
-  Calendar,
-  Users,
-  FolderOpen,
-  Clock,
-  UserPlus,
-  Activity,
-  CheckCircle2,
-} from "lucide-react";
-import AddNewUser from "../Task/AddNewUser";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useSocket } from "@/hooks/useSokect";
 import type { SocketData } from "../Request";
 import toast from "react-hot-toast";
 import ActivityLogs from "./ActivityLogs";
+import Chat from "./Chat";
+import type { User } from "@/types/user.types";
+import ProjectHeader from "./ProjectHeader";
+import ProjectStats from "./ProjectStats";
+import TeamMember from "./TeamMember";
+import ErrorSkeleton from "../common/ErrorSkeleton";
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  username: string;
-}
-
-interface Project {
+export interface Project {
   createdAt: Date;
   createdBy: string;
   description: string;
@@ -64,9 +52,8 @@ const OneProject = () => {
   async function fetchProject() {
     try {
       setLoading(true);
-      const response = await axios.post(
+      const response = await axios.get(
         `http://localhost:3000/api/project/get-one-project/${id}`,
-        { projectId: id },
         { withCredentials: true }
       );
       // console.log(response);
@@ -78,6 +65,9 @@ const OneProject = () => {
       setLoading(false);
     }
   }
+
+  console.log({ userId });
+  console.log(projectData);
 
   useEffect(() => {
     if (id) {
@@ -107,14 +97,6 @@ const OneProject = () => {
     };
   }, [socket]);
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] p-8">
@@ -133,31 +115,10 @@ const OneProject = () => {
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-[#f7f7f7] p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-red-600 text-2xl">⚠️</span>
-            </div>
-            <h3 className="text-xl font-semibold text-[#323643] mb-2">
-              Error Loading Project
-            </h3>
-            <p className="text-[#606470] mb-6">{error}</p>
-            <Link
-              to="/projectes"
-              className="inline-flex items-center gap-2 bg-[#323643] text-white px-6 py-3 rounded-xl font-medium hover:bg-[#323643]/90 transition-colors"
-            >
-              <ArrowLeft size={18} />
-              Back to Projects
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorSkeleton error={error} />;
   }
 
-  if (!id) {
+  if (!id || !user) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] p-8">
         <div className="max-w-6xl mx-auto">
@@ -186,227 +147,18 @@ const OneProject = () => {
 
   return (
     <div className="min-h-screen bg-[#f7f7f7]">
+      {/* Chat */}
+      <Chat user={user} id={id} title={projectData.title} />
+
       {/* Header Section */}
-      <div className="bg-white border-b border-[#93deff]/20 shadow-sm">
-        <div className="max-w-6xl mx-auto p-8">
-          {/* Navigation */}
-          <div className="flex items-center justify-between mb-6">
-            <Link
-              to="/projects"
-              className="inline-flex items-center gap-2 text-[#606470] hover:text-[#323643] font-medium transition-colors duration-200"
-            >
-              <ArrowLeft size={20} />
-              All Projects
-            </Link>
-          </div>
-
-          {/* Project Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-6">
-              <div className="w-20 h-20 bg-[#93deff] rounded-3xl flex items-center justify-center flex-shrink-0">
-                <FolderOpen size={40} className="text-[#323643]" />
-              </div>
-
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold text-[#323643] mb-3">
-                  {projectData.title}
-                </h1>
-                <p className="text-[#606470] text-lg leading-relaxed mb-6 max-w-3xl">
-                  {projectData.description}
-                </p>
-
-                {/* Project Meta Info */}
-                <div className="flex flex-wrap items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-[#606470]" />
-                    <span className="text-[#606470]">
-                      Created {formatDate(projectData.createdAt)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock size={18} className="text-[#606470]" />
-                    <span className="text-[#606470]">
-                      Updated {formatDate(projectData.updatedAt)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Users size={18} className="text-[#606470]" />
-                    <span className="text-[#606470]">
-                      {projectData.members.length} member
-                      {projectData.members.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-
-                  {projectData.pendingMembers.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <UserPlus size={18} className="text-[#606470]" />
-                      <span className="text-[#606470]">
-                        {projectData.pendingMembers.length} pending invitation
-                        {projectData.pendingMembers.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {projectData.createdBy === userId && (
-              <div className="flex flex-col gap-4">
-                <div className="flex-shrink-0">
-                  <AddTaskDialog id={id} />
-                </div>
-                <div className="flex-shrink-0">
-                  <AddNewUser id={id} />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <ProjectHeader id={id} projectData={projectData} userId={user.id} />
 
       {/* Project Stats */}
       <div className="max-w-6xl mx-auto p-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#93deff]/20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-[#93deff]/20 rounded-xl flex items-center justify-center">
-                <Activity size={24} className="text-[#323643]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[#323643]">
-                  {Math.ceil(
-                    (new Date().getTime() -
-                      new Date(projectData.createdAt).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )}
-                </p>
-                <p className="text-sm text-[#606470]">Days Active</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#93deff]/20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-[#93deff]/20 rounded-xl flex items-center justify-center">
-                <Users size={24} className="text-[#323643]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[#323643]">
-                  {projectData.members.length}
-                </p>
-                <p className="text-sm text-[#606470]">Team Members</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#93deff]/20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-[#93deff]/20 rounded-xl flex items-center justify-center">
-                <UserPlus size={24} className="text-[#323643]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[#323643]">
-                  {projectData.pendingMembers.length}
-                </p>
-                <p className="text-sm text-[#606470]">Pending Invites</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#93deff]/20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <CheckCircle2 size={24} className="text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-[#323643]">
-                  {projectData.members.length > 0 ? "Active" : "Inactive"}
-                </p>
-                <p className="text-sm text-[#606470]">Project Status</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProjectStats projectData={projectData} />
 
         {/* Team Members Section */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#93deff]/20 mb-8">
-          <h2 className="text-2xl font-bold text-[#323643] mb-6 flex items-center gap-3">
-            <Users size={28} className="text-[#93deff]" />
-            Team Members
-          </h2>
-
-          {projectData.members.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projectData.members.map((member, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-4 bg-[#f7f7f7] rounded-xl"
-                >
-                  <div className="w-10 h-10 bg-[#93deff] rounded-full flex items-center justify-center">
-                    <span className="text-[#323643] font-semibold">
-                      {member.username.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-[#323643]">
-                      {member.username}
-                    </p>
-                    <div className="flex justify-center items-center w-full gap-10">
-                      <p className="text-sm text-[#606470]">{member.name}</p>
-                      <p className="text-sm text-[#606470]">Team Member</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Users
-                size={48}
-                className="text-[#606470] mx-auto mb-4 opacity-50"
-              />
-              <p className="text-[#606470] text-lg">No team members yet</p>
-              <p className="text-[#606470] text-sm">
-                Invite members to collaborate on this project
-              </p>
-            </div>
-          )}
-
-          {projectData.pendingMembers.length > 0 && (
-            <>
-              <div className="border-t border-[#93deff]/20 mt-8 pt-8">
-                <h3 className="text-lg font-semibold text-[#323643] mb-4 flex items-center gap-2">
-                  <UserPlus size={20} className="text-[#93deff]" />
-                  Pending Invitations
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {projectData.pendingMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl"
-                    >
-                      <div className="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center">
-                        <span className="text-yellow-800 font-semibold">
-                          {member?.username?.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-[#323643]">
-                          {member?.username}
-                        </p>
-                        <p className="text-sm text-yellow-700">
-                          Invitation Pending
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        <TeamMember projectData={projectData} />
 
         {/* Tasks Section */}
         <div className="bg-white rounded-2xl shadow-lg border border-[#93deff]/20">

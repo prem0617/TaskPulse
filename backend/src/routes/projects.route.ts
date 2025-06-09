@@ -16,7 +16,7 @@ const router = express.Router();
 router.post("/create-project", authMiddleware, createProject);
 router.get("/get-project", authMiddleware, getProjects);
 router.get("/invited-projects", authMiddleware, invitedProjects);
-router.post("/get-one-project/:id", authMiddleware, getProject);
+router.get("/get-one-project/:projectId", authMiddleware, getProject);
 router.post("/send-request", authMiddleware, sendRequest);
 router.post("/accept-request", authMiddleware, acceptRequest);
 router.post("/get-tasks", authMiddleware, getTasks);

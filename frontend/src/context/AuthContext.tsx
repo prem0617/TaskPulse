@@ -1,3 +1,4 @@
+import type { User } from "@/types/user.types";
 import axios from "axios";
 import {
   createContext,
@@ -18,13 +19,6 @@ interface Props {
   children: ReactNode;
 }
 
-interface User {
-  email: string;
-  name: string;
-  id: string;
-  role: string;
-}
-
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export default function AuthContextProvider({ children }: Props) {
@@ -34,6 +28,7 @@ export default function AuthContextProvider({ children }: Props) {
     name: "",
     id: "",
     role: "",
+    username: "",
   });
 
   async function fetchUser() {
