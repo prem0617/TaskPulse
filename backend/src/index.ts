@@ -23,7 +23,11 @@ import { sendEmail } from "./bullMq/mailer";
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://task-pulse-seven.vercel.app",
+      "https://task-pulse.vercel.app",
+    ],
     credentials: true,
   })
 );
