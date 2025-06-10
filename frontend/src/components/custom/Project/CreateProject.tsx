@@ -17,6 +17,9 @@ interface ProjectData {
 }
 
 const CreateProject = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState<ProjectData>({
@@ -41,7 +44,7 @@ const CreateProject = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/project/create-project",
+        `${apiUrl}/api/project/create-project`,
         formData,
         { withCredentials: true }
       );

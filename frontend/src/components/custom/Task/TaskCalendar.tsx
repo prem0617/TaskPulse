@@ -54,6 +54,9 @@ interface Data {
 }
 
 const TaskCalendar = ({ id }: Props) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const socket = useSocket();
   const { user } = useAuthContext();
   const { addActivityLog } = useActivityLogger();
@@ -70,7 +73,7 @@ const TaskCalendar = ({ id }: Props) => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:3000/api/project/get-tasks",
+        `${apiUrl}/api/project/get-tasks`,
         { projectId: id },
         { withCredentials: true }
       );
@@ -91,7 +94,7 @@ const TaskCalendar = ({ id }: Props) => {
     const { status, taskId } = data;
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/task/modify-task-status",
+        `${apiUrl}/api/task/modify-task-status`,
         { taskId: taskId, status: status },
         { withCredentials: true }
       );
@@ -110,7 +113,7 @@ const TaskCalendar = ({ id }: Props) => {
   const handleDeleteTask = async (taskId: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/task/delete-task?taskId=${taskId}`,
+        `${apiUrl}/api/task/delete-task?taskId=${taskId}`,
         { withCredentials: true }
       );
 

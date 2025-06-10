@@ -26,6 +26,9 @@ interface Project {
 }
 
 const InvitedProjects = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,7 +37,7 @@ const InvitedProjects = () => {
     const fetchInvitedProjects = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/project/invited-projects",
+          `${apiUrl}/api/project/invited-projects`,
           { withCredentials: true }
         );
         console.log(response);

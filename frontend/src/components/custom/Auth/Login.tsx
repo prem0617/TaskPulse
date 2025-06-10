@@ -7,6 +7,9 @@ import toast from "react-hot-toast";
 import { useAuthContext } from "@/context/AuthContext";
 
 const Login = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const { setUser, setLoading } = useAuthContext();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +25,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        `${apiUrl}/api/auth/login`,
         {
           email: formData.email,
           password: formData.password,

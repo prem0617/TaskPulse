@@ -3,7 +3,9 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:3000";
+const apiUrl = import.meta.env.VITE_API_URL;
+
+const SOCKET_URL = apiUrl;
 
 export const useSocket = (): Socket | null => {
   const socketRef = useRef<Socket | null>(null);

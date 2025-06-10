@@ -49,6 +49,9 @@ const Request = () => {
   const [loading, setLoading] = useState(true);
   const [acceptingRequests, setAcceptingRequests] = useState<string[]>([]);
 
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const { user } = useAuthContext();
 
   const { addActivityLog } = useActivityLogger(); // use the hook
@@ -87,10 +90,9 @@ const Request = () => {
   async function fetchInviteRequest() {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "http://localhost:3000/api/users/invite-request",
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${apiUrl}/api/users/invite-request`, {
+        withCredentials: true,
+      });
       console.log(response);
       setInviteProjects(response.data.inviteProjects);
     } catch (error) {
@@ -112,7 +114,7 @@ const Request = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/project/accept-request",
+        `${apiUrl}/api/project/accept-request`,
         { projectId },
         { withCredentials: true }
       );

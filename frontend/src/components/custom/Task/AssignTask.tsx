@@ -19,6 +19,9 @@ interface User {
 }
 
 const AssignTaskDialog = ({ taskId }: Props) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const { id: projectId } = useParams();
 
   const [userDetail, setUserDetails] = useState("");
@@ -42,7 +45,7 @@ const AssignTaskDialog = ({ taskId }: Props) => {
     const delay = setTimeout(async () => {
       try {
         const res = await axios.get(
-          `http://localhost:3000/api/users/search?q=${userDetail}`,
+          `${apiUrl}/api/users/search?q=${userDetail}`,
           { withCredentials: true }
         );
         setSuggestions(res.data);
@@ -65,7 +68,7 @@ const AssignTaskDialog = ({ taskId }: Props) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/task/assign-task",
+        `${apiUrl}/api/task/assign-task`,
         {
           userId: selectedUser._id,
           taskId,

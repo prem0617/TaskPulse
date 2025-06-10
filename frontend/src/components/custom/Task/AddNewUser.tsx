@@ -26,6 +26,9 @@ interface Props {
 }
 
 const AddNewUser = ({ id: projectId }: Props) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [_isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +48,7 @@ const AddNewUser = ({ id: projectId }: Props) => {
       setIsSearching(true);
       try {
         const res = await axios.get(
-          `http://localhost:3000/api/users/search?q=${userEmail}`,
+          `${apiUrl}/api/users/search?q=${userEmail}`,
           { withCredentials: true }
         );
         setSuggestions(res.data);
@@ -67,7 +70,7 @@ const AddNewUser = ({ id: projectId }: Props) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/project/send-request",
+        `${apiUrl}/api/project/send-request`,
         {
           memberId: selectedUser._id,
           username: selectedUser.username,

@@ -9,11 +9,14 @@ interface AddActivityLogParams {
 }
 
 export default function useActivityLogger() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const addActivityLog = useCallback(
     async ({ projectId, action, extraInfo }: AddActivityLogParams) => {
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/logs/add-logs",
+          `${apiUrl}/api/logs/add-logs`,
           { projectId, action, extraInfo },
           { withCredentials: true }
         );

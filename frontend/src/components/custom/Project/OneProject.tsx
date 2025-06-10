@@ -27,6 +27,9 @@ export interface Project {
 }
 
 const OneProject = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const { id } = useParams();
 
   const { user } = useAuthContext();
@@ -54,7 +57,7 @@ const OneProject = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://localhost:3000/api/project/get-one-project/${id}`,
+        `${apiUrl}/api/project/get-one-project/${id}`,
         { withCredentials: true }
       );
       // console.log(response);

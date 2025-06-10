@@ -20,6 +20,9 @@ interface Log {
 }
 
 function ActivityLogs({ id: projectId }: { id: string }) {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [logs, setLogs] = useState<Log[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +32,7 @@ function ActivityLogs({ id: projectId }: { id: string }) {
   const handleDelete = async (logId: string) => {
     try {
       await axios.post(
-        "http://localhost:3000/api/logs/delete-logs",
+        `${apiUrl}/api/logs/delete-logs`,
         { logId },
         { withCredentials: true }
       );
@@ -43,7 +46,7 @@ function ActivityLogs({ id: projectId }: { id: string }) {
   const fetchLogs = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/logs/get-logs",
+        `${apiUrl}/api/logs/get-logs`,
         { projectId },
         {
           withCredentials: true,

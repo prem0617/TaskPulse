@@ -14,6 +14,9 @@ interface User {
 }
 
 const Profile = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
@@ -28,7 +31,7 @@ const Profile = () => {
   async function fetchUser() {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/users/getUser",
+        `${apiUrl}/api/users/getUser`,
         { userId: id },
         { withCredentials: true }
       );
@@ -57,7 +60,7 @@ const Profile = () => {
     setIsUpdating(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/users/editProfile",
+        `${apiUrl}/api/users/editProfile`,
         {
           userId: user.id,
           name: editForm.name,

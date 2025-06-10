@@ -22,6 +22,9 @@ interface Props {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export default function AuthContextProvider({ children }: Props) {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [user, setUser] = useState<User | null>({
     email: "",
@@ -33,7 +36,7 @@ export default function AuthContextProvider({ children }: Props) {
 
   async function fetchUser() {
     try {
-      const response = await axios.get("http://localhost:3000/api/auth/getMe", {
+      const response = await axios.get(`${apiUrl}/api/auth/getMe`, {
         withCredentials: true,
       });
       //   console.log(response);

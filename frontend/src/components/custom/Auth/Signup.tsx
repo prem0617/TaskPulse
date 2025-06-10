@@ -14,6 +14,9 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 const Signup = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
@@ -31,13 +34,9 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/signup",
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post(`${apiUrl}/api/auth/signup`, formData, {
+        withCredentials: true,
+      });
       toast.success("Account created successfully!");
       localStorage.setItem("tmtoken", response.data.token);
       navigate("/");

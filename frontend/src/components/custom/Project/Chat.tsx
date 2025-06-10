@@ -30,6 +30,9 @@ interface Props {
 }
 
 const Chat = ({ user, id, title }: Props) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [showChat, setShowChat] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -39,7 +42,7 @@ const Chat = ({ user, id, title }: Props) => {
 
   const getMessage = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/chat/${id}`, {
+      const response = await axios.get(`${apiUrl}/api/chat/${id}`, {
         withCredentials: true,
       });
       setMessages(response.data.messages);
@@ -56,7 +59,7 @@ const Chat = ({ user, id, title }: Props) => {
     if (!message.trim()) return;
     try {
       await axios.post(
-        `http://localhost:3000/api/chat/${id}`,
+        `${apiUrl}/api/chat/${id}`,
         { message },
         { withCredentials: true }
       );

@@ -34,6 +34,9 @@ interface TaskFormData {
 }
 
 const AddTaskDialog = ({ id }: Props) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState<TaskFormData>({
     title: "",
@@ -163,7 +166,7 @@ const AddTaskDialog = ({ id }: Props) => {
       });
 
       const response = await axios.post(
-        "http://localhost:3000/api/task/add-task",
+        `${apiUrl}/api/task/add-task`,
         formDataToSend,
         {
           withCredentials: true,

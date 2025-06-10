@@ -32,6 +32,9 @@ interface DeleteProjectData {
 }
 
 const AllProjects = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log(apiUrl);
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,12 +42,9 @@ const AllProjects = () => {
 
   const fetchAllProjects = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:3000/api/project/get-project",
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`${apiUrl}/api/project/get-project`, {
+        withCredentials: true,
+      });
       console.log(response);
       setProjects(response.data.projects); // assuming response has { projects: [...] }
     } catch (error) {
@@ -72,7 +72,7 @@ const AllProjects = () => {
 
     try {
       await axios.post(
-        "http://localhost:3000/api/project/delete-project",
+        `${apiUrl}/api/project/delete-project`,
         { projectId },
         { withCredentials: true }
       );
