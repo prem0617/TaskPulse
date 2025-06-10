@@ -1,3 +1,7 @@
+// worker.ts or redis.ts
+import dotenv from "dotenv";
+dotenv.config();
+
 import { Worker } from "bullmq";
 import { connection } from "./redis";
 import { sendEmail } from "./mailer";

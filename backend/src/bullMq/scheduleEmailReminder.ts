@@ -11,7 +11,7 @@ export async function scheduleEmailReminder({
   email,
   dueDate,
 }: ReminderData) {
-  const reminderTime = new Date(dueDate).getTime() - 24 * 60 * 60 * 1000;
+  const reminderTime = new Date(dueDate).getTime() - 30 * 60 * 1000;
   const delay = reminderTime - Date.now();
 
   if (delay > 0) {

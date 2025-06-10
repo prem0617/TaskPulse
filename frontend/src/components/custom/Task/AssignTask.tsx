@@ -182,7 +182,7 @@ const AssignTaskDialog = ({ taskId }: Props) => {
               Due Date & Time
             </label>
             <input
-              type="date"
+              type="datetime-local"
               id="dueDate"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}

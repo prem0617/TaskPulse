@@ -98,7 +98,7 @@ const OneProject = () => {
     };
   }, [socket]);
 
-  if (!loading) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 
