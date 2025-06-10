@@ -139,10 +139,11 @@ export async function signup(req: Request, res: Response) {
 }
 
 export function logout(_req: Request, res: Response) {
-  res.clearCookie("tmtoken", {
+  res.cookie("tmtoken", "", {
     httpOnly: true,
     secure: true,
     sameSite: "none",
+    expires: new Date(0), // ✅ or use maxAge: 0
   });
   res.json({ message: "User logged out successfully", success: true });
 }

@@ -3,6 +3,7 @@ import projectModel from "../models/project.model";
 import { getReceiverSocketId, io } from "../socket/socket.io";
 import userModel from "../models/user.model";
 import taskModel from "../models/task.model";
+import notificationModel from "../models/notification.model";
 
 export async function createProject(req: Request, res: Response) {
   try {
@@ -162,17 +163,36 @@ export async function sendRequest(req: Request, res: Response) {
     project.pendingMembers.push(memberId);
     await project.save();
 
-    res.json({ message: "Member is added to the project", project });
+    const notificationPayload = {
+      userId: memberId,
+      sender: user.id,
+      type: "project-invite",
+      content: `You are invited in ${project.title}`,
+      projectId,
+    };
+
+    const newNotification = await notificationModel.create(notificationPayload);
+
+    res.json({
+      message: "Member is added to the project",
+      project,
+      newNotification,
+    });
 
     const roomName = project.id;
 
     const receiverId = getReceiverSocketId(memberId);
+    console.log({ receiverId });
 
-    console.log(receiverId);
     if (receiverId) {
       io.to(receiverId).emit("invite-member", {
         message: `You invited in ${project.title}`,
         project,
+      });
+      console.log("hello ");
+      io.to(receiverId).emit("notification", {
+        message: newNotification.content,
+        newNotification,
       });
     }
 
