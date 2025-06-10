@@ -141,8 +141,8 @@ export async function signup(req: Request, res: Response) {
 export function logout(_req: Request, res: Response) {
   res.clearCookie("tmtoken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
   });
   res.json({ message: "User logged out successfully", success: true });
 }
