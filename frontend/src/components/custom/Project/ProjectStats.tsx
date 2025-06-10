@@ -1,4 +1,4 @@
-import { Activity, Users, UserPlus, CheckCircle2 } from "lucide-react";
+import { Users, UserPlus } from "lucide-react";
 import type { User } from "@/types/user.types";
 
 interface Project {

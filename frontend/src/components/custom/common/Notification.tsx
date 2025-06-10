@@ -1,25 +1,25 @@
-import { useAuthContext } from "@/context/AuthContext";
-import { useSocket } from "@/hooks/useSokect";
+// import { useAuthContext } from "@/context/AuthContext";
+// import { useSocket } from "@/hooks/useSokect";
 import { Bell } from "lucide-react";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 
 const Notification = () => {
-  const socket = useSocket();
-  const { user } = useAuthContext();
+  // const socket = useSocket();
+  // const { user } = useAuthContext();
 
-  useEffect(() => {
-    if (!socket) return;
+  // useEffect(() => {
+  //   if (!socket) return;
 
-    function handleNotification(data) {
-      console.log(data);
-    }
+  //   function handleNotification(data) {
+  //     console.log(data);
+  //   }
 
-    socket.on("notification", handleNotification);
+  //   socket.on("notification", handleNotification);
 
-    return () => {
-      socket.off("notification", handleNotification);
-    };
-  }, [socket, user]);
+  //   return () => {
+  //     socket.off("notification", handleNotification);
+  //   };
+  // }, [socket, user]);
 
   return (
     <div className="bg-white rounded-2xl p-8 shadow-lg border border-[#93deff]/20">
