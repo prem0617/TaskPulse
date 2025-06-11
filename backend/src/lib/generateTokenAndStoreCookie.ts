@@ -14,8 +14,10 @@ function generateTokenAndStoreCookie(data: IGenerateToken) {
 
   res.cookie("tmtoken", token, {
     httpOnly: true,
-    secure: true, // ✅ for HTTPS
-    sameSite: "none", // ✅ required for cross-site cookies
+    secure: true,
+    sameSite: "none",
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   });
 
   return token;
